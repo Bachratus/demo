@@ -1,0 +1,3 @@
+CREATE TABLE tmp (
+    id BIGSERIAL PRIMARY KEY
+);
