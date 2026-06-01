@@ -26,16 +26,16 @@ spring:
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       properties:
         "[delivery.timeout.ms]": 45000
-        "[spring.json.type.mapping]": "demo-event-v1:com.bachratus.demo.kafka.DemoEvent"
+        "[spring.json.type.mapping]": "demo-event-v1:com.bachratus.demo.infra.kafka.DemoEvent"
     consumer:
       group-id: demo-app
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
-        "[spring.json.type.mapping]": "demo-event-v1:com.bachratus.demo.kafka.DemoEvent"
+        "[spring.json.type.mapping]": "demo-event-v1:com.bachratus.demo.infra.kafka.DemoEvent"
         "[spring.json.remove.type.headers]": false
-        "[spring.json.trusted.packages]": com.bachratus.demo.kafka
+        "[spring.json.trusted.packages]": com.bachratus.demo.infra.kafka
   security:
     oauth2:
       resourceserver:

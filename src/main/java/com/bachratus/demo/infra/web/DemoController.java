@@ -1,4 +1,4 @@
-package com.bachratus.demo;
+package com.bachratus.demo.infra.web;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;

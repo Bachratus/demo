@@ -1,4 +1,4 @@
-package com.bachratus.demo.kafka;
+package com.bachratus.demo.infra.kafka;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;

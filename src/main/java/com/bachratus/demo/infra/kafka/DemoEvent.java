@@ -1,4 +1,4 @@
-package com.bachratus.demo.kafka;
+package com.bachratus.demo.infra.kafka;
 
 import java.time.Instant;
 import java.util.UUID;

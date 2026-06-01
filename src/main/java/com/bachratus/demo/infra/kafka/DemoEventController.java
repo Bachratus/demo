@@ -1,4 +1,4 @@
-package com.bachratus.demo.kafka;
+package com.bachratus.demo.infra.kafka;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
