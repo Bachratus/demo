@@ -23,6 +23,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.flywaydb:flyway-core'
+	implementation 'org.redisson:redisson-hibernate-6:4.3.1'
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	annotationProcessor 'org.projectlombok:lombok'
@@ -35,5 +36,10 @@ dependencies {
 }
 
 tasks.named('test') {
+	jvmArgs(
+			"-javaagent:${configurations.testRuntimeClasspath.find { it.name.contains('byte-buddy-agent') }.absolutePath}",
+			"-Xshare:off",
+			"-XX:+EnableDynamicAgentLoading"
+	)
 	useJUnitPlatform()
 }

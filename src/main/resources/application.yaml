@@ -6,9 +6,24 @@ spring:
     username: ${DB_USERNAME:demo_user}
     password: ${DB_PASSWORD:demo_password}
     driver-class-name: org.postgresql.Driver
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate:
+        cache:
+          use_second_level_cache: true
+          region:
+            factory_class: org.redisson.hibernate.RedissonRegionFactory
+          redisson:
+            config: redisson.yaml
+            fallback: true
   security:
     oauth2:
       resourceserver:
         jwt:
           issuer-uri: ${OAUTH2_ISSUER_URI:http://localhost:8080/realms/bachratus}
           jwk-set-uri: ${OAUTH2_JWK_SET_URI:http://keycloak:8080/realms/bachratus/protocol/openid-connect/certs}
+
+logging:
+  pattern:
+    console: ${LOG_PATTERN_CONSOLE:%green(%d{HH:mm:ss.SSS}) %blue(%-5level) %red([%thread]) %yellow(%logger{15}) - %msg%n}
