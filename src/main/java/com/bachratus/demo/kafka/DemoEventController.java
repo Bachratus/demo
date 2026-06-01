@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/events")
 @RequiredArgsConstructor
@@ -18,9 +20,9 @@ public class DemoEventController {
     @PostMapping
     @ResponseStatus(HttpStatus.ACCEPTED)
     public DemoEvent publish(@RequestBody PublishDemoEventRequest request) {
-        return producer.publish(request.message());
+        return producer.publish(request.aggregateId(), request.message());
     }
 
-    public record PublishDemoEventRequest(String message) {
+    public record PublishDemoEventRequest(UUID aggregateId, String message) {
     }
 }
