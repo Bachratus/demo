@@ -17,6 +17,24 @@ spring:
           redisson:
             config: redisson.yaml
             fallback: true
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka1:9092,kafka2:9092,kafka3:9092}
+    producer:
+      acks: all
+      retries: 3
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        "[delivery.timeout.ms]": 45000
+        "[spring.json.add.type.headers]": false
+    consumer:
+      group-id: demo-app
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        "[spring.json.value.default.type]": com.bachratus.demo.kafka.DemoEvent
+        "[spring.json.trusted.packages]": com.bachratus.demo.kafka
   security:
     oauth2:
       resourceserver:
@@ -27,3 +45,13 @@ spring:
 logging:
   pattern:
     console: ${LOG_PATTERN_CONSOLE:%green(%d{HH:mm:ss.SSS}) %blue(%-5level) %red([%thread]) %yellow(%logger{15}) - %msg%n}
+  level:
+    org.apache.kafka: ${KAFKA_CLIENT_LOGGING_LEVEL:WARN}
+    org.springframework.kafka: ${SPRING_KAFKA_LOGGING_LEVEL:WARN}
+
+demo:
+  kafka:
+    partitions: ${DEMO_KAFKA_PARTITIONS:3}
+    replicas: ${DEMO_KAFKA_REPLICAS:3}
+    topics:
+      events: ${DEMO_KAFKA_TOPIC_EVENTS:demo-events}
