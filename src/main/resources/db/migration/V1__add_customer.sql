@@ -1,8 +1,6 @@
-DROP TABLE tmp;
-
 CREATE TABLE customer
 (
-    id           BIGSERIAL PRIMARY KEY,
+    id           BIGINT PRIMARY KEY,
     public_id    UUID        NOT NULL UNIQUE,
     user_id      UUID,
     email        TEXT        NOT NULL,
@@ -15,6 +13,13 @@ CREATE TABLE customer
         CHECK (LENGTH(TRIM(email)) > 0)
 );
 
+CREATE SEQUENCE customer_id_seq
+    START WITH 1
+    INCREMENT BY 50;
+
+ALTER SEQUENCE customer_id_seq
+    OWNED BY customer.id;
+
 CREATE UNIQUE INDEX customer_user_id_unique
     ON customer (user_id)
     WHERE user_id IS NOT NULL;
@@ -22,10 +27,9 @@ CREATE UNIQUE INDEX customer_user_id_unique
 CREATE UNIQUE INDEX customer_email_unique
     ON customer (LOWER(email));
 
-
 CREATE TABLE customer_address
 (
-    id               BIGSERIAL PRIMARY KEY,
+    id               BIGINT PRIMARY KEY,
     public_id        UUID        NOT NULL UNIQUE,
     customer_id      BIGINT      NOT NULL,
     label            TEXT,
@@ -65,6 +69,13 @@ CREATE TABLE customer_address
     CONSTRAINT customer_address_country_code_format
         CHECK (country_code ~ '^[A-Z]{2}$')
 );
+
+CREATE SEQUENCE customer_address_id_seq
+    START WITH 1
+    INCREMENT BY 50;
+
+ALTER SEQUENCE customer_address_id_seq
+    OWNED BY customer_address.id;
 
 CREATE INDEX customer_address_customer_id_idx
     ON customer_address (customer_id);

@@ -2,14 +2,20 @@ spring:
   application:
     name: demo
   datasource:
-    url: ${JDBC_URL:jdbc:postgresql://demo-db:5432/demo}
+    url: ${JDBC_URL:jdbc:postgresql://demo-db:5432/demo?reWriteBatchedInserts=true}
     username: ${DB_USERNAME:demo_user}
     password: ${DB_PASSWORD:demo_password}
     driver-class-name: org.postgresql.Driver
   jpa:
     open-in-view: false
+    hibernate:
+      ddl-auto: validate
     properties:
       hibernate:
+        jdbc:
+          batch_size: 50
+        order_inserts: true
+        order_updates: true
         cache:
           use_second_level_cache: true
           region:
