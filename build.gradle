@@ -22,15 +22,23 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 	implementation 'org.flywaydb:flyway-core'
 	implementation 'org.redisson:redisson-hibernate-6:4.3.1'
 	implementation 'org.springframework.kafka:spring-kafka'
+
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	annotationProcessor 'org.projectlombok:lombok'
 	runtimeOnly 'org.flywaydb:flyway-database-postgresql'
 	runtimeOnly 'org.postgresql:postgresql'
+
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.boot:spring-boot-testcontainers'
+	testImplementation 'org.testcontainers:testcontainers-junit-jupiter:2.0.3'
+	testImplementation 'org.testcontainers:postgresql'
+	testImplementation 'org.testcontainers:kafka'
+
 	testCompileOnly 'org.projectlombok:lombok'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	testAnnotationProcessor 'org.projectlombok:lombok'

@@ -1,4 +1,4 @@
-package com.bachratus.demo.infra;
+package com.bachratus.demo;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

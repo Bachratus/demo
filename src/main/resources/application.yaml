@@ -17,6 +17,23 @@ spring:
           redisson:
             config: redisson.yaml
             fallback: true
+  data:
+    redis:
+      host: ${SPRING_REDIS_HOST:redis}
+      port: ${SPRING_REDIS_PORT:6379}
+#      username: default
+#      password: secret
+#      database: 0
+#      timeout: 3s
+#
+#      lettuce:
+#        pool:
+#          enabled: true
+#          max-active: 16
+#          max-idle: 8
+#          min-idle: 2
+#          max-wait: 1s
+#        shutdown-timeout: 100ms
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka1:9092,kafka2:9092,kafka3:9092}
     producer:
