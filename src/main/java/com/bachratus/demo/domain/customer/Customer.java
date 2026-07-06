@@ -1,41 +1,21 @@
 package com.bachratus.demo.domain.customer;
 
 import com.bachratus.demo.domain.shared.utils.ValidationUtils;
-import com.bachratus.demo.domain.shared.value.id.CustomerId;
+import com.bachratus.demo.domain.customer.id.CustomerId;
 import com.bachratus.demo.domain.shared.value.TextProperty;
-import com.bachratus.demo.domain.shared.value.Email;
-import com.bachratus.demo.domain.shared.value.id.UserId;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
+import com.bachratus.demo.domain.customer.id.UserId;
 import lombok.Getter;
 
-import java.util.Objects;
-
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
 public class Customer {
     private final CustomerId id;
-    private UserId userId;
-    private final Email email;
+    private final UserId userId;
     private TextProperty displayName;
 
-    public static Customer restore(
-            CustomerId id,
-            UserId userId,
-            Email email,
-            TextProperty displayName
-    ) {
-        return new Customer(id, userId, email, displayName);
-    }
-
-    public void connectToAuthorizedUser(UserId userId) {
-        UserId requiredUserId = ValidationUtils.requireNotNull(userId, "userId");
-
-        if (this.userId != null) {
-            throw new UserAlreadyConnectedException(this.userId, requiredUserId, this.id);
-        }
-
-        this.userId = requiredUserId;
+    private Customer(CustomerId id, UserId userId, TextProperty displayName) {
+        this.id = ValidationUtils.requireNotNull(id, "id");
+        this.userId = ValidationUtils.requireNotNull(userId, "userId");
+        this.displayName = displayName;
     }
 
     public void changeDisplayName(TextProperty displayName) {
@@ -53,16 +33,10 @@ public class Customer {
     public static class CustomerBuilder {
         private CustomerId id;
         private UserId userId;
-        private Email email;
         private TextProperty displayName;
 
         public Customer build() {
-            return new Customer(
-                    ValidationUtils.requireNotNull(id, "id"),
-                    userId,
-                    ValidationUtils.requireNotNull(email, "email"),
-                    displayName
-            );
+            return new Customer(id, userId, displayName);
         }
 
         public CustomerBuilder id(CustomerId id) {
@@ -72,11 +46,6 @@ public class Customer {
 
         public CustomerBuilder userId(UserId userId) {
             this.userId = userId;
-            return this;
-        }
-
-        public CustomerBuilder email(Email email) {
-            this.email = email;
             return this;
         }
 

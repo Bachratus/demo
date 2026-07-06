@@ -1,4 +1,4 @@
-package com.bachratus.demo.domain.shared.value.id;
+package com.bachratus.demo.domain.customer.id;
 
 import com.bachratus.demo.domain.shared.utils.ValidationUtils;
 
