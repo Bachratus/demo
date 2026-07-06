@@ -26,6 +26,9 @@ public abstract class BaseIntegrationTest {
         postgres.start();
         redis.start();
         kafka.start();
+
+        System.setProperty("SPRING_REDIS_HOST", redis.getHost());
+        System.setProperty("SPRING_REDIS_PORT", redis.getMappedPort(6379).toString());
     }
 
     @DynamicPropertySource
