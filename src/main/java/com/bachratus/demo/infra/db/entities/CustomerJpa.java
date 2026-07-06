@@ -1,4 +1,4 @@
-package com.bachratus.demo.infra.db;
+package com.bachratus.demo.infra.db.entities;
 
 import jakarta.persistence.*;
 import org.springframework.data.annotation.CreatedBy;

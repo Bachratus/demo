@@ -1,4 +1,4 @@
-package com.bachratus.demo.infra.db;
+package com.bachratus.demo.infra.db.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
