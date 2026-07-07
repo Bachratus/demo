@@ -30,7 +30,7 @@ public class CustomerJpa {
     private UUID publicId;
 
     @Column(name = "user_id", nullable = false, updatable = false)
-    private UUID userId;
+    private String userId;
 
     @Column(name = "display_name")
     private String displayName;

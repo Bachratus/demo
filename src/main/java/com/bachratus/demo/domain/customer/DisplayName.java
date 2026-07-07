@@ -1,6 +1,6 @@
 package com.bachratus.demo.domain.customer;
 
-import com.bachratus.demo.domain.shared.utils.ValidationUtils;
+import com.bachratus.demo.domain.shared.exception.validation.MissingRequiredFieldException;
 
 import java.util.Optional;
 
@@ -8,7 +8,7 @@ public record DisplayName(String value) {
 
     public DisplayName {
         if (value == null || value.isBlank()) {
-            ValidationUtils.requireNotNull(value, "displayName");
+            throw new MissingRequiredFieldException("displayName");
         }
 
         value = value.trim();

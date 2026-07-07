@@ -1,16 +1,18 @@
 package com.bachratus.demo.domain.customer;
 
-import com.bachratus.demo.domain.shared.utils.ValidationUtils;
+import com.bachratus.demo.domain.shared.exception.validation.MissingRequiredFieldException;
 
-import java.util.UUID;
-
-public record UserId(UUID value) {
+public record UserId(String value) {
 
     public UserId {
-        ValidationUtils.requireNotNull(value, "userId");
+        if (value == null || value.isBlank()) {
+            throw new MissingRequiredFieldException("userId");
+        }
+
+        value = value.trim();
     }
 
-    public static UserId of(UUID value) {
+    public static UserId of(String value) {
         return new UserId(value);
     }
 }
