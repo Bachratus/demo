@@ -1,6 +1,9 @@
-package com.bachratus.demo.infra.db.entities;
+package com.bachratus.demo.infra.db.customer;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -11,6 +14,8 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
+@Getter(value = AccessLevel.PACKAGE)
+@Setter(value = AccessLevel.PACKAGE)
 @Entity
 @Table(name = "customer")
 @EntityListeners(AuditingEntityListener.class)
@@ -24,7 +29,7 @@ public class CustomerJpa {
     @Column(name = "public_id", nullable = false, updatable = false)
     private UUID publicId;
 
-    @Column(name = "user_id")
+    @Column(name = "user_id", nullable = false, updatable = false)
     private UUID userId;
 
     @Column(name = "display_name")
