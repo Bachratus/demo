@@ -27,9 +27,6 @@ public class CustomerJpa {
     @Column(name = "user_id")
     private UUID userId;
 
-    @Column(name = "email", nullable = false)
-    private String email;
-
     @Column(name = "display_name")
     private String displayName;
 

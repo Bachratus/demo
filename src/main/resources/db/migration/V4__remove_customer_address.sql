@@ -1,0 +1,1 @@
+ALTER TABLE customer drop column email;
