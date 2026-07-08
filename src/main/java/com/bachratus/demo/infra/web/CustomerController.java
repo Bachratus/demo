@@ -22,12 +22,11 @@ public class CustomerController {
             @AuthenticationPrincipal Jwt jwt,
             @RequestBody CreateCustomerAccountRequest request
     ) {
-        //        Map.of(
-        //                "message", "Hello from Bachratus",
-        //                "userId", jwt.getSubject(),
-        //                "email", jwt.getClaimAsString("email")
-        //        );
+        CreateCustomerAccountRequest withSubject = new CreateCustomerAccountRequest(
+                request.displayName(),
+                jwt.getSubject()
+        );
 
-        return createCustomerAccountUseCase.create(request, jwt.getSubject());
+        return createCustomerAccountUseCase.create(withSubject);
     }
 }

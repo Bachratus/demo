@@ -6,7 +6,6 @@ import com.bachratus.demo.domain.customer.Customer;
 public interface CreateCustomerAccountUseCase {
 
     Customer create(
-            CreateCustomerAccountRequest request,
-            String subject
+            CreateCustomerAccountRequest request
     );
 }

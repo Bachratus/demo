@@ -7,8 +7,11 @@ import com.bachratus.demo.domain.customer.Customer;
 import com.bachratus.demo.domain.customer.CustomerId;
 import com.bachratus.demo.domain.customer.DisplayName;
 import com.bachratus.demo.domain.customer.UserId;
+import com.bachratus.demo.domain.shared.exception.AlreadyExistsException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -18,13 +21,20 @@ public class CreateCustomerAccountUseCaseImpl implements CreateCustomerAccountUs
 
     @Override
     public Customer create(
-            CreateCustomerAccountRequest request,
-            String subject
+            CreateCustomerAccountRequest request
     ) {
+        UserId userId = UserId.of(request.subject());
+
+        Optional<Customer> existing = customerRepository.findByUserId(userId);
+
+        if (existing.isPresent()) {
+            throw new AlreadyExistsException(Customer.class, "userId", userId.value());
+        }
+
         Customer customer = Customer.builder()
                 .id(CustomerId.create())
                 .displayName(DisplayName.optional(request.displayName()).orElse(null))
-                .userId(UserId.of(subject))
+                .userId(userId)
                 .build();
 
         return customerRepository.createNewCustomer(customer);
