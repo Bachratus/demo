@@ -2,7 +2,7 @@ package com.bachratus.demo.infra.db.customer;
 
 import com.bachratus.demo.domain.customer.Customer;
 import com.bachratus.demo.domain.customer.CustomerId;
-import com.bachratus.demo.domain.customer.DisplayName;
+import com.bachratus.demo.domain.customer.CustomerDisplayName;
 import com.bachratus.demo.domain.customer.UserId;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +17,7 @@ public class CustomerMapper {
         return Customer.restore(
                 CustomerId.of(customerJpa.getPublicId()),
                 UserId.of(customerJpa.getUserId()),
-                DisplayName.optional(customerJpa.getDisplayName()).orElse(null)
+                CustomerDisplayName.optional(customerJpa.getDisplayName()).orElse(null)
         );
     }
 
@@ -28,7 +28,7 @@ public class CustomerMapper {
 
         customerJpa.setPublicId(customer.getId().value());
         customerJpa.setUserId(customer.getUserId().value());
-        customerJpa.setDisplayName(toDisplayNameValue(customer.getDisplayName()));
+        customerJpa.setDisplayName(toDisplayNameValue(customer.getCustomerDisplayName()));
         return customerJpa;
     }
 
@@ -36,10 +36,10 @@ public class CustomerMapper {
         Objects.requireNonNull(customer, "customer cannot be null");
         Objects.requireNonNull(customerJpa, "customerJpa cannot be null");
 
-        customerJpa.setDisplayName(toDisplayNameValue(customer.getDisplayName()));
+        customerJpa.setDisplayName(toDisplayNameValue(customer.getCustomerDisplayName()));
     }
 
-    private String toDisplayNameValue(DisplayName displayName) {
-        return displayName == null ? null : displayName.value();
+    private String toDisplayNameValue(CustomerDisplayName customerDisplayName) {
+        return customerDisplayName == null ? null : customerDisplayName.value();
     }
 }

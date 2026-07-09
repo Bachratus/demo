@@ -5,7 +5,7 @@ import com.bachratus.demo.application.request.CreateCustomerAccountRequest;
 import com.bachratus.demo.application.ports.in.CreateCustomerAccountUseCase;
 import com.bachratus.demo.domain.customer.Customer;
 import com.bachratus.demo.domain.customer.CustomerId;
-import com.bachratus.demo.domain.customer.DisplayName;
+import com.bachratus.demo.domain.customer.CustomerDisplayName;
 import com.bachratus.demo.domain.customer.UserId;
 import com.bachratus.demo.domain.shared.exception.AlreadyExistsException;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +33,7 @@ public class CreateCustomerAccountUseCaseImpl implements CreateCustomerAccountUs
 
         Customer customer = Customer.builder()
                 .id(CustomerId.create())
-                .displayName(DisplayName.optional(request.displayName()).orElse(null))
+                .displayName(CustomerDisplayName.optional(request.displayName()).orElse(null))
                 .userId(userId)
                 .build();
 

@@ -10,7 +10,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class DisplayNameTest {
+class CustomerDisplayNameTest {
 
     @DisplayName("Tests for required(String) method")
     @Nested
@@ -19,11 +19,11 @@ class DisplayNameTest {
         @Test
         void shouldThrowExceptionWhenParameterIsNullOrBlank(){
             // when & then
-            assertThatThrownBy(()-> com.bachratus.demo.domain.customer.DisplayName.required(null))
+            assertThatThrownBy(()-> CustomerDisplayName.required(null))
                     .isInstanceOf(MissingRequiredFieldException.class)
                     .hasMessageContaining("displayName");
 
-            assertThatThrownBy(()-> com.bachratus.demo.domain.customer.DisplayName.required("   "))
+            assertThatThrownBy(()-> CustomerDisplayName.required("   "))
                     .isInstanceOf(MissingRequiredFieldException.class)
                     .hasMessageContaining("displayName");
         }
@@ -34,10 +34,10 @@ class DisplayNameTest {
             String value = "  a ";
 
             // when
-            com.bachratus.demo.domain.customer.DisplayName displayName = com.bachratus.demo.domain.customer.DisplayName.required(value);
+            CustomerDisplayName customerDisplayName = CustomerDisplayName.required(value);
 
             // then
-            assertThat(displayName.value()).isEqualTo("a");
+            assertThat(customerDisplayName.value()).isEqualTo("a");
         }
     }
 
@@ -48,8 +48,8 @@ class DisplayNameTest {
         @Test
         void shouldReturnEmptyWhenParameterIsNullOrBlank(){
             // when
-            Optional<com.bachratus.demo.domain.customer.DisplayName> ofNull = com.bachratus.demo.domain.customer.DisplayName.optional(null);
-            Optional<com.bachratus.demo.domain.customer.DisplayName> ofBlank = com.bachratus.demo.domain.customer.DisplayName.optional("  ");
+            Optional<CustomerDisplayName> ofNull = CustomerDisplayName.optional(null);
+            Optional<CustomerDisplayName> ofBlank = CustomerDisplayName.optional("  ");
 
             // then
             assertThat(ofNull).isEmpty();
@@ -62,7 +62,7 @@ class DisplayNameTest {
             String value = "  a ";
 
             // when
-            Optional<com.bachratus.demo.domain.customer.DisplayName> displayName = com.bachratus.demo.domain.customer.DisplayName.optional(value);
+            Optional<CustomerDisplayName> displayName = CustomerDisplayName.optional(value);
 
             // then
             assertThat(displayName).isNotEmpty().hasValueSatisfying(dn ->assertThat(dn.value()).isEqualTo("a"));

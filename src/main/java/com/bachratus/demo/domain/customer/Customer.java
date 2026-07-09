@@ -7,24 +7,16 @@ import lombok.Getter;
 public class Customer {
     private final CustomerId id;
     private final UserId userId;
-    private DisplayName displayName;
+    private final CustomerDisplayName customerDisplayName;
 
-    private Customer(CustomerId id, UserId userId, DisplayName displayName) {
+    private Customer(CustomerId id, UserId userId, CustomerDisplayName customerDisplayName) {
         this.id = ValidationUtils.requireNotNull(id, "id");
         this.userId = ValidationUtils.requireNotNull(userId, "userId");
-        this.displayName = displayName;
+        this.customerDisplayName = customerDisplayName;
     }
 
-    public static Customer restore(CustomerId id, UserId userId, DisplayName displayName) {
-        return new Customer(id, userId, displayName);
-    }
-
-    public void changeDisplayName(DisplayName displayName) {
-        this.displayName = ValidationUtils.requireNotNull(displayName, "displayName");
-    }
-
-    public void clearDisplayName() {
-        this.displayName = null;
+    public static Customer restore(CustomerId id, UserId userId, CustomerDisplayName customerDisplayName) {
+        return new Customer(id, userId, customerDisplayName);
     }
 
     public static CustomerBuilder builder() {
@@ -34,10 +26,10 @@ public class Customer {
     public static class CustomerBuilder {
         private CustomerId id;
         private UserId userId;
-        private DisplayName displayName;
+        private CustomerDisplayName customerDisplayName;
 
         public Customer build() {
-            return new Customer(id, userId, displayName);
+            return new Customer(id, userId, customerDisplayName);
         }
 
         public CustomerBuilder id(CustomerId id) {
@@ -50,8 +42,8 @@ public class Customer {
             return this;
         }
 
-        public CustomerBuilder displayName(DisplayName displayName) {
-            this.displayName = displayName;
+        public CustomerBuilder displayName(CustomerDisplayName customerDisplayName) {
+            this.customerDisplayName = customerDisplayName;
             return this;
         }
     }

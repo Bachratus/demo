@@ -1,15 +1,14 @@
 package com.bachratus.demo.domain.customer;
 
 import com.bachratus.demo.domain.shared.exception.validation.MissingRequiredFieldException;
+import com.bachratus.demo.domain.shared.utils.ValidationUtils;
 
 import java.util.UUID;
 
 public record CustomerId(UUID value) {
 
     public CustomerId {
-        if (value == null) {
-            throw new MissingRequiredFieldException("customerId");
-        }
+        ValidationUtils.requireNotNull(value,"customerId");
     }
 
     public static CustomerId of(UUID value) {

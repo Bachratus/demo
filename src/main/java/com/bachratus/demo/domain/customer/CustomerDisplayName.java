@@ -4,9 +4,9 @@ import com.bachratus.demo.domain.shared.exception.validation.MissingRequiredFiel
 
 import java.util.Optional;
 
-public record DisplayName(String value) {
+public record CustomerDisplayName(String value) {
 
-    public DisplayName {
+    public CustomerDisplayName {
         if (value == null || value.isBlank()) {
             throw new MissingRequiredFieldException("displayName");
         }
@@ -14,15 +14,15 @@ public record DisplayName(String value) {
         value = value.trim();
     }
 
-    public static DisplayName required(String value) {
-        return new DisplayName(value);
+    public static CustomerDisplayName required(String value) {
+        return new CustomerDisplayName(value);
     }
 
-    public static Optional<DisplayName> optional(String value) {
+    public static Optional<CustomerDisplayName> optional(String value) {
         if (value == null || value.isBlank()) {
             return Optional.empty();
         }
 
-        return Optional.of(new DisplayName(value));
+        return Optional.of(new CustomerDisplayName(value));
     }
 }
