@@ -1,6 +1,6 @@
 package com.bachratus.demo.infra.db.customer;
 
-import com.bachratus.demo.BaseJpaIntegrationTest;
+import com.bachratus.demo.config.BaseJpaIntegrationTest;
 import com.bachratus.demo.domain.customer.Customer;
 import com.bachratus.demo.domain.customer.CustomerDisplayName;
 import com.bachratus.demo.domain.customer.CustomerId;
