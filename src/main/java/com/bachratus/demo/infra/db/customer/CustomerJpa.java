@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -16,6 +18,7 @@ import java.util.UUID;
 
 @Getter(value = AccessLevel.PACKAGE)
 @Setter(value = AccessLevel.PACKAGE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "customer")
 @Entity
 @Table(name = "customer")
 @EntityListeners(AuditingEntityListener.class)
