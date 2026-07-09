@@ -24,13 +24,16 @@ spring:
           batch_size: 50
         order_inserts: true
         order_updates: true
+        generate_statistics: true
         cache:
           use_second_level_cache: true
+          use_query_cache: true
           region:
             factory_class: org.redisson.hibernate.RedissonRegionFactory
           redisson:
             config: redisson.yaml
             fallback: true
+        show_sql: false
   data:
     redis:
       host: ${SPRING_REDIS_HOST:redis}

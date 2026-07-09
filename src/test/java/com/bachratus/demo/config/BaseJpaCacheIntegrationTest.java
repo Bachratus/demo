@@ -1,20 +1,35 @@
 package com.bachratus.demo.config;
 
+import com.bachratus.demo.infra.db.config.JpaAuditingConfiguration;
+import org.junit.jupiter.api.AfterEach;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.context.annotation.Import;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.time.Instant;
+
 @SuppressWarnings("resource")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Testcontainers
 @DataJpaTest
-@EnableJpaAuditing
+@Import({JpaAuditingConfiguration.class, ControlledClockTestConfiguration.class})
 public abstract class BaseJpaCacheIntegrationTest {
+
+    @Autowired
+    protected ControlledClockTestConfiguration.MutableClock clock;
+
+    @AfterEach
+    void resetClock() {
+        clock.setInstant(Instant.parse("2026-01-01T00:00:00Z"));
+        SecurityContextHolder.clearContext();
+    }
 
     static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17")
             .withDatabaseName("testdb")
@@ -27,6 +42,9 @@ public abstract class BaseJpaCacheIntegrationTest {
     static {
         postgres.start();
         redis.start();
+
+        System.setProperty("SPRING_REDIS_HOST", redis.getHost());
+        System.setProperty("SPRING_REDIS_PORT", redis.getMappedPort(6379).toString());
     }
 
     @DynamicPropertySource
@@ -35,17 +53,6 @@ public abstract class BaseJpaCacheIntegrationTest {
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
 
-        registry.add("spring.data.redis.host", redis::getHost);
-        registry.add("spring.data.redis.port", () -> redis.getMappedPort(6379));
-
-        registry.add("spring.jpa.properties.hibernate.cache.use_second_level_cache", () -> true);
-        registry.add("spring.jpa.properties.hibernate.cache.use_query_cache", () -> true);
-        registry.add(
-                "spring.jpa.properties.hibernate.generate_statistics",
-                () -> true
-        );
-
-        // tutaj ustawiasz dokładnie tę samą konfigurację Redisson/Hibernate,
-        // której używasz produkcyjnie
+        registry.add("spring.jpa.properties.hibernate.cache.redisson.fallback", () -> false);
     }
 }

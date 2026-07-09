@@ -18,6 +18,7 @@ import java.util.UUID;
 
 @Getter(value = AccessLevel.PACKAGE)
 @Setter(value = AccessLevel.PACKAGE)
+@Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "customer")
 @Entity
 @Table(name = "customer")
