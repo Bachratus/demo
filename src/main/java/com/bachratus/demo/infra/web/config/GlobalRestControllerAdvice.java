@@ -65,9 +65,9 @@ public class GlobalRestControllerAdvice {
         return new ErrorResponse(ErrorType.DOMAIN, "OPTIMISTIC_LOCK_CONFLICT", "Resource was modified by another request");
     }
 
-    @ExceptionHandler(RuntimeException.class)
+    @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleRuntimeException(RuntimeException ex) {
+    public ErrorResponse handleException(Exception ex) {
         log.error("Unexpected server error", ex);
         return new ErrorResponse(ErrorType.SERVER, "INTERNAL_SERVER_ERROR", "Unexpected server error");
     }
