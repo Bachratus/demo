@@ -5,7 +5,7 @@ public final class ExceptionCodeExtractor {
     private ExceptionCodeExtractor() {
     }
 
-    public static String extract(Exception exception) {
+    public static String extract(Throwable exception) {
         return exception.getClass().getSimpleName()
                 .replace("Exception", "")
                 .replaceAll("([a-z])([A-Z])", "$1_$2")
