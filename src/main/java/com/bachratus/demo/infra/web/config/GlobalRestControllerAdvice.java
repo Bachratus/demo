@@ -3,12 +3,11 @@ package com.bachratus.demo.infra.web.config;
 import com.bachratus.demo.domain.shared.exception.AlreadyExistsException;
 import com.bachratus.demo.domain.shared.exception.DomainException;
 import com.bachratus.demo.domain.shared.exception.validation.ValidationException;
-import com.nimbusds.jose.shaded.gson.stream.MalformedJsonException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.http.converter.HttpMessageConversionException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,24 +22,19 @@ public class GlobalRestControllerAdvice {
 
     @ExceptionHandler(ValidationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleValidationException(ValidationException ex) {
+    public ErrorResponse handleValidationException(RuntimeException ex) {
         return validationError(ex);
     }
 
-    @ExceptionHandler(HttpMessageNotReadableException.class)
+    @ExceptionHandler(HttpMessageConversionException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleMalformedJsonException(HttpMessageNotReadableException ex) {
-        return new ErrorResponse("VALIDATION", "MalformedJson", null, ex.getMessage());
+    public ErrorResponse handleMalformedJsonException(RuntimeException ex) {
+        return validationError(ex);
     }
 
-    private ErrorResponse validationError(ValidationException ex){
-        log.debug("Validation failed for field '{}': {}", ex.getField(), ex.getMessage());
-
-        String reasonCode = ex.getMessage().contains(": ")
-                ? ex.getMessage().split(": ")[1]
-                : ex.getMessage();
-
-        return new ErrorResponse("VALIDATION", reasonCode.toUpperCase(), ex.getField(), ex.getMessage());
+    private ErrorResponse validationError(RuntimeException ex) {
+        log.debug("Validation failed for reason: {}", ex.getMessage());
+        return new ErrorResponse(ErrorType.VALIDATION, ExceptionCodeExtractor.extract(ex), ex.getMessage());
     }
 
     // --------------------------- DOMAIN ---------------------------
@@ -59,13 +53,7 @@ public class GlobalRestControllerAdvice {
 
     private ErrorResponse domainError(DomainException ex) {
         log.warn("Domain rule violation: {}", ex.getMessage());
-
-        String code = ex.getClass().getSimpleName()
-                .replace("Exception", "")
-                .replaceAll("([a-z])([A-Z])", "$1_$2")
-                .toUpperCase();
-
-        return new ErrorResponse("DOMAIN", code, null, ex.getMessage());
+        return new ErrorResponse(ErrorType.DOMAIN, ExceptionCodeExtractor.extract(ex), ex.getMessage());
     }
 
     // --------------------------- INFRASTRUCTURE ---------------------------
@@ -74,15 +62,13 @@ public class GlobalRestControllerAdvice {
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handleOptimisticLockingFailure(OptimisticLockingFailureException ex) {
         log.warn("Optimistic lock conflict", ex);
-        return new ErrorResponse("DATABASE", "OPTIMISTIC_LOCK_CONFLICT", null,
-                "Resource was modified by another request");
+        return new ErrorResponse(ErrorType.DOMAIN, "OPTIMISTIC_LOCK_CONFLICT", "Resource was modified by another request");
     }
 
     @ExceptionHandler(RuntimeException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleRuntimeException(RuntimeException ex) {
         log.error("Unexpected server error", ex);
-        return new ErrorResponse("SERVER", "INTERNAL_SERVER_ERROR", null,
-                "Unexpected server error");
+        return new ErrorResponse(ErrorType.SERVER, "INTERNAL_SERVER_ERROR", "Unexpected server error");
     }
 }
