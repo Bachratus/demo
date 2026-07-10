@@ -8,11 +8,11 @@ import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.KafkaAdmin;
 
 @Configuration(proxyBeanMethods = false)
-@EnableConfigurationProperties(DemoKafkaProperties.class)
+@EnableConfigurationProperties(AppKafkaProperties.class)
 public class KafkaTopicConfiguration {
 
     @Bean
-    public KafkaAdmin.NewTopics demoTopics(DemoKafkaProperties properties) {
+    public KafkaAdmin.NewTopics demoTopics(AppKafkaProperties properties) {
         NewTopic[] topics = properties.topics().values().stream()
                 .map(topic -> TopicBuilder.name(topic)
                         .partitions(properties.partitions())

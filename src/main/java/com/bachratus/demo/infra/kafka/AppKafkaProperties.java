@@ -4,14 +4,14 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.Map;
 
-@ConfigurationProperties(prefix = "demo.kafka")
-public record DemoKafkaProperties(
+@ConfigurationProperties(prefix = "app.kafka")
+public record AppKafkaProperties(
         int partitions,
         int replicas,
         Map<String, String> topics
 ) {
 
-    public DemoKafkaProperties {
+    public AppKafkaProperties {
         topics = topics == null ? Map.of() : Map.copyOf(topics);
     }
 

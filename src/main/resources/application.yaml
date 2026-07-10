@@ -84,7 +84,7 @@ logging:
     org.apache.kafka: ${KAFKA_CLIENT_LOGGING_LEVEL:WARN}
     org.springframework.kafka: ${SPRING_KAFKA_LOGGING_LEVEL:WARN}
 
-demo:
+app:
   kafka:
     partitions: ${DEMO_KAFKA_PARTITIONS:3}
     replicas: ${DEMO_KAFKA_REPLICAS:3}
