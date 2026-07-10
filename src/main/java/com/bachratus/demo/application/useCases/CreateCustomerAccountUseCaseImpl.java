@@ -8,11 +8,13 @@ import com.bachratus.demo.domain.customer.CustomerId;
 import com.bachratus.demo.domain.customer.CustomerDisplayName;
 import com.bachratus.demo.domain.customer.UserId;
 import com.bachratus.demo.domain.shared.exception.AlreadyExistsException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+@Transactional
 @RequiredArgsConstructor
 @Service
 public class CreateCustomerAccountUseCaseImpl implements CreateCustomerAccountUseCase {
