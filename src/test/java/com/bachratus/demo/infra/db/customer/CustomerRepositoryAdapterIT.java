@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @Import({CustomerRepositoryAdapter.class, CustomerMapper.class})
-class CustomerRepositoryAdapterTest extends BaseJpaIntegrationTest {
+class CustomerRepositoryAdapterIT extends BaseJpaIntegrationTest {
 
     @Autowired
     private CustomerRepositoryAdapter adapter;

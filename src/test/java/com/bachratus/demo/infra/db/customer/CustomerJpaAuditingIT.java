@@ -12,7 +12,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class CustomerJpaTest extends BaseJpaIntegrationTest {
+class CustomerJpaAuditingIT extends BaseJpaIntegrationTest {
 
     @Autowired
     private TestEntityManager entityManager;

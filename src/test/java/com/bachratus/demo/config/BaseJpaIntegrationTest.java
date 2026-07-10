@@ -19,7 +19,10 @@ import java.time.Instant;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Testcontainers
 @DataJpaTest
-@Import({JpaAuditingConfiguration.class, ControlledClockTestConfiguration.class})
+@Import({
+        JpaAuditingConfiguration.class,
+        ControlledClockTestConfiguration.class
+})
 public abstract class BaseJpaIntegrationTest {
 
     @Autowired

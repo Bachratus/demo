@@ -27,7 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @Import({CustomerRepositoryAdapter.class, CustomerMapper.class})
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
-class CustomerJpaCacheTest extends BaseJpaCacheIntegrationTest {
+class CustomerJpaCacheIT extends BaseJpaCacheIntegrationTest {
 
     @Autowired
     private TestEntityManager entityManager;

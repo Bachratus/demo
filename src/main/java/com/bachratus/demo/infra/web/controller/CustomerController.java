@@ -1,4 +1,4 @@
-package com.bachratus.demo.infra.web;
+package com.bachratus.demo.infra.web.controller;
 
 import com.bachratus.demo.application.request.CreateCustomerAccountRequest;
 import com.bachratus.demo.application.ports.in.CreateCustomerAccountUseCase;
