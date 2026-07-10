@@ -11,11 +11,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.Instant;
 
-@SuppressWarnings("resource")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Testcontainers
 @DataJpaTest
@@ -31,14 +31,13 @@ public abstract class BaseJpaIntegrationTest {
         SecurityContextHolder.clearContext();
     }
 
-    static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17")
-            .withDatabaseName("testdb")
-            .withUsername("user")
-            .withPassword("pass");
-
-    static {
-        postgres.start();
-    }
+    @SuppressWarnings("resource")
+    @Container
+    static final PostgreSQLContainer<?> postgres =
+            new PostgreSQLContainer<>("postgres:17")
+                    .withDatabaseName("testdb")
+                    .withUsername("user")
+                    .withPassword("pass");
 
     @DynamicPropertySource
     static void registerProperties(DynamicPropertyRegistry registry) {

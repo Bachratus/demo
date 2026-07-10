@@ -71,8 +71,7 @@ class CustomerJpaCacheTest extends BaseJpaCacheIntegrationTest {
         // given
         Long databaseId = persistCustomerJpa(
                 UUID.randomUUID(),
-                uniqueUserId("jpa-id"),
-                "Me"
+                uniqueUserId("jpa-id")
         );
 
         sessionFactory.getCache().evictAllRegions();
@@ -118,8 +117,7 @@ class CustomerJpaCacheTest extends BaseJpaCacheIntegrationTest {
 
         persistCustomerJpa(
                 publicId,
-                uniqueUserId("public-id"),
-                "Me"
+                uniqueUserId("public-id")
         );
 
         sessionFactory.getCache().evictAllRegions();
@@ -131,6 +129,7 @@ class CustomerJpaCacheTest extends BaseJpaCacheIntegrationTest {
         );
 
         long preparedStatementsAfterFirstRead = statistics.getPrepareStatementCount();
+        long queryCacheHitsAfterFirstRead = statistics.getQueryCacheHitCount();
 
         Optional<Customer> secondResult = transactionTemplate.execute(
                 status -> adapter.findById(CustomerId.of(publicId))
@@ -140,9 +139,21 @@ class CustomerJpaCacheTest extends BaseJpaCacheIntegrationTest {
         assertThat(firstResult).isPresent();
         assertThat(secondResult).isPresent();
 
+        assertThat(statistics.getQueryCacheMissCount())
+                .as("First read should miss query cache")
+                .isGreaterThanOrEqualTo(1);
+
+        assertThat(statistics.getQueryCachePutCount())
+                .as("First read should put customer into query cache")
+                .isGreaterThanOrEqualTo(1);
+
         assertThat(statistics.getPrepareStatementCount())
                 .as("Second read by publicId should not execute additional SQL")
                 .isEqualTo(preparedStatementsAfterFirstRead);
+
+        assertThat(statistics.getQueryCacheHitCount())
+                .as("Second read by publicId should hit query cache")
+                .isGreaterThan(queryCacheHitsAfterFirstRead);
     }
 
     @Test
@@ -153,8 +164,7 @@ class CustomerJpaCacheTest extends BaseJpaCacheIntegrationTest {
 
         persistCustomerJpa(
                 publicId,
-                userId,
-                "Me"
+                userId
         );
 
         sessionFactory.getCache().evictAllRegions();
@@ -166,6 +176,7 @@ class CustomerJpaCacheTest extends BaseJpaCacheIntegrationTest {
         );
 
         long preparedStatementsAfterFirstRead = statistics.getPrepareStatementCount();
+        long queryCacheHitsAfterFirstRead = statistics.getQueryCacheHitCount();
 
         Optional<Customer> secondResult = transactionTemplate.execute(
                 status -> adapter.findByUserId(UserId.of(userId))
@@ -175,17 +186,29 @@ class CustomerJpaCacheTest extends BaseJpaCacheIntegrationTest {
         assertThat(firstResult).isPresent();
         assertThat(secondResult).isPresent();
 
+        assertThat(statistics.getQueryCacheMissCount())
+                .as("First read should miss query cache")
+                .isGreaterThanOrEqualTo(1);
+
+        assertThat(statistics.getQueryCachePutCount())
+                .as("First read should put customer into query cache")
+                .isGreaterThanOrEqualTo(1);
+
         assertThat(statistics.getPrepareStatementCount())
                 .as("Second read by userId should not execute additional SQL")
                 .isEqualTo(preparedStatementsAfterFirstRead);
+
+        assertThat(statistics.getQueryCacheHitCount())
+                .as("Second read by userId should hit query cache")
+                .isGreaterThan(queryCacheHitsAfterFirstRead);
     }
 
-    private Long persistCustomerJpa(UUID publicId, String userId, String displayName) {
+    private Long persistCustomerJpa(UUID publicId, String userId) {
         return transactionTemplate.execute(status -> {
             CustomerJpa customerJpa = new CustomerJpa();
             customerJpa.setPublicId(publicId);
             customerJpa.setUserId(userId);
-            customerJpa.setDisplayName(displayName);
+            customerJpa.setDisplayName("Me");
 
             CustomerJpa persisted = entityManager.persistAndFlush(customerJpa);
             return persisted.getId();
