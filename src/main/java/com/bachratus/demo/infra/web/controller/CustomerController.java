@@ -3,6 +3,7 @@ package com.bachratus.demo.infra.web.controller;
 import com.bachratus.demo.application.request.CreateCustomerAccountRequest;
 import com.bachratus.demo.application.ports.in.CreateCustomerAccountUseCase;
 import com.bachratus.demo.domain.customer.Customer;
+import com.bachratus.demo.infra.web.controller.request.CreateCustomerHttpRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -20,7 +21,7 @@ public class CustomerController {
     @PostMapping("/customer")
     public Customer createCustomerAccount(
             @AuthenticationPrincipal Jwt jwt,
-            @RequestBody CreateCustomerAccountRequest request
+            @RequestBody CreateCustomerHttpRequest request
     ) {
         CreateCustomerAccountRequest withSubject = new CreateCustomerAccountRequest(
                 request.displayName(),
