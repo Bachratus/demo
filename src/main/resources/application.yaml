@@ -24,7 +24,7 @@ spring:
           batch_size: 50
         order_inserts: true
         order_updates: true
-        generate_statistics: true
+        generate_statistics: ${HIBERNATE_GENERATE_STATISTICS:false}
         cache:
           use_second_level_cache: true
           use_query_cache: true
@@ -54,22 +54,25 @@ spring:
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka1:9092,kafka2:9092,kafka3:9092}
     producer:
-      acks: all
-      retries: 3
+      acks: ${DEMO_KAFKA_PRODUCER_ACKS:all}
+      retries: ${DEMO_KAFKA_PRODUCER_RETRIES:10}
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       properties:
-        "[delivery.timeout.ms]": 45000
-        "[spring.json.type.mapping]": "demo-event-v1:com.bachratus.demo.infra.kafka.DemoEvent"
+        "[enable.idempotence]": ${DEMO_KAFKA_PRODUCER_IDEMPOTENCE:true}
+        "[delivery.timeout.ms]": ${DEMO_KAFKA_PRODUCER_DELIVERY_TIMEOUT_MS:45000}
+        "[request.timeout.ms]": ${DEMO_KAFKA_PRODUCER_REQUEST_TIMEOUT_MS:15000}
+        "[linger.ms]": ${DEMO_KAFKA_PRODUCER_LINGER_MS:5}
+        "[spring.json.add.type.headers]": false
     consumer:
       group-id: demo-app
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
       properties:
-        "[spring.json.type.mapping]": "demo-event-v1:com.bachratus.demo.infra.kafka.DemoEvent"
-        "[spring.json.remove.type.headers]": false
-        "[spring.json.trusted.packages]": com.bachratus.demo.infra.kafka
+        "[spring.deserializer.value.delegate.class]": org.springframework.kafka.support.serializer.JsonDeserializer
+        "[spring.json.value.default.type]": com.fasterxml.jackson.databind.JsonNode
+        "[spring.json.trusted.packages]": com.bachratus.demo.*,com.fasterxml.jackson.databind
   security:
     oauth2:
       resourceserver:
@@ -83,10 +86,29 @@ logging:
   level:
     org.apache.kafka: ${KAFKA_CLIENT_LOGGING_LEVEL:WARN}
     org.springframework.kafka: ${SPRING_KAFKA_LOGGING_LEVEL:WARN}
+    org.hibernate.engine.internal.StatisticalLoggingSessionEventListener: ${HIBERNATE_STATISTICS_LOGGING_LEVEL:OFF}
 
 app:
   kafka:
-    partitions: ${DEMO_KAFKA_PARTITIONS:3}
-    replicas: ${DEMO_KAFKA_REPLICAS:3}
+    producer:
+      delivery-timeout-ms: ${DEMO_KAFKA_PRODUCER_DELIVERY_TIMEOUT_MS:45000}
+      request-timeout-ms: ${DEMO_KAFKA_PRODUCER_REQUEST_TIMEOUT_MS:15000}
+      linger-ms: ${DEMO_KAFKA_PRODUCER_LINGER_MS:5}
+      send-result-timeout-ms: ${DEMO_KAFKA_PRODUCER_SEND_RESULT_TIMEOUT_MS:50000}
+    listener:
+      retry-interval-ms: ${DEMO_KAFKA_LISTENER_RETRY_INTERVAL_MS:1000}
+      max-attempts: ${DEMO_KAFKA_LISTENER_MAX_ATTEMPTS:3}
+    outbox:
+      enabled: ${DEMO_KAFKA_OUTBOX_ENABLED:true}
+      batch-size: ${DEMO_KAFKA_OUTBOX_BATCH_SIZE:100}
+      poll-delay-ms: ${DEMO_KAFKA_OUTBOX_POLL_DELAY_MS:500}
+      retry-backoff-ms: ${DEMO_KAFKA_OUTBOX_RETRY_BACKOFF_MS:10000}
+      max-attempts: ${DEMO_KAFKA_OUTBOX_MAX_ATTEMPTS:5}
     topics:
-      events: ${DEMO_KAFKA_TOPIC_EVENTS:demo-events}
+      customer-account-created:
+        name: ${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED:demo.customer-account-created.v1}
+        concurrency: ${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED_CONCURRENCY:3}
+        partitions: ${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED_PARTITIONS:3}
+        replication-factor: ${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED_REPLICATION_FACTOR:3}
+        min-in-sync-replicas: ${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED_MIN_ISR:2}
+        dlt-name: ${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED_DLT:demo.customer-account-created.v1.dlt}

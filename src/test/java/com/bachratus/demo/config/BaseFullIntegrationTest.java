@@ -32,9 +32,6 @@ public abstract class BaseFullIntegrationTest {
         postgres.start();
         redis.start();
         kafka.start();
-
-        System.setProperty("SPRING_REDIS_HOST", redis.getHost());
-        System.setProperty("SPRING_REDIS_PORT", redis.getMappedPort(6379).toString());
     }
 
     @DynamicPropertySource
@@ -45,6 +42,7 @@ public abstract class BaseFullIntegrationTest {
         registry.add("spring.data.redis.host", redis::getHost);
         registry.add("spring.data.redis.port", () -> redis.getMappedPort(6379));
         registry.add("spring.kafka.bootstrap-servers", kafka::getBootstrapServers);
-        registry.add("demo.kafka.replicas", () -> 1);
+        registry.add("app.kafka.topics.customer-account-created.replication-factor", () -> 1);
+        registry.add("app.kafka.topics.customer-account-created.min-in-sync-replicas", () -> 1);
     }
 }

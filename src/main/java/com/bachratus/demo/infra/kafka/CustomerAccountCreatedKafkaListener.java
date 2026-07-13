@@ -1,0 +1,29 @@
+package com.bachratus.demo.infra.kafka;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.stereotype.Component;
+
+@Slf4j
+@Component
+public class CustomerAccountCreatedKafkaListener {
+
+    @KafkaListener(
+            id = "customer-account-created-console-logger",
+            groupId = "${spring.kafka.consumer.group-id}",
+            topics = "${app.kafka.topics.customer-account-created.name}",
+            concurrency = "${app.kafka.topics.customer-account-created.concurrency}"
+    )
+    public void logCustomerAccountCreated(ConsumerRecord<String, JsonNode> record) {
+        log.info(
+                "Received customer account created event: topic={}, partition={}, offset={}, key={}, payload={}",
+                record.topic(),
+                record.partition(),
+                record.offset(),
+                record.key(),
+                record.value()
+        );
+    }
+}
