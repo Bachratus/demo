@@ -12,6 +12,7 @@ import java.time.Instant;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @SpringBootTest
 @Import({
+        ControlledClockTestConfiguration.class,
         PostgresTestContainerConfiguration.class,
         RedisTestContainerConfiguration.class,
         KafkaTestContainerConfiguration.class,
