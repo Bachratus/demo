@@ -1,5 +1,6 @@
 package com.bachratus.demo.infra.kafka;
 
+import com.bachratus.demo.infra.kafka.config.CustomerAccountCreatedKafkaListener;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -26,7 +27,7 @@ class CustomerAccountCreatedKafkaListenerTest {
         void shouldLogConsumedCustomerAccountCreatedEvent(CapturedOutput output) {
             // given
             ConsumerRecord<String, JsonNode> record = new ConsumerRecord<>(
-                    "demo.customer-account-created.v1",
+                    "store.customer-account-created.v1",
                     2,
                     42L,
                     "customer-123",
@@ -42,7 +43,7 @@ class CustomerAccountCreatedKafkaListenerTest {
             // then
             assertThat(output.getOut())
                     .contains("Received customer account created event")
-                    .contains("demo.customer-account-created.v1")
+                    .contains("store.customer-account-created.v1")
                     .contains("partition=2")
                     .contains("offset=42")
                     .contains("customer-123");

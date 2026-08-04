@@ -90,6 +90,7 @@ logging:
 
 app:
   kafka:
+    enabled: ${DEMO_KAFKA_ENABLED:true}
     producer:
       delivery-timeout-ms: ${DEMO_KAFKA_PRODUCER_DELIVERY_TIMEOUT_MS:45000}
       request-timeout-ms: ${DEMO_KAFKA_PRODUCER_REQUEST_TIMEOUT_MS:15000}
@@ -106,6 +107,8 @@ app:
       max-attempts: ${DEMO_KAFKA_OUTBOX_MAX_ATTEMPTS:5}
     topics:
       customer-account-created:
-        name: ${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED:demo.customer-account-created.v1}
+        name: ${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED:store.customer-account-created.v1}
         concurrency: ${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED_CONCURRENCY:3}
-        dlt-name: ${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED_DLT:demo.customer-account-created.v1.dlt}
+        dlt-name: ${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED_DLT:store.customer-account-created.v1.dlt}
+        event-type: ${DEMO_KAFKA_EVENT_CUSTOMER_ACCOUNT_CREATED_TYPE:customer.account-created}
+        aggregate-type: ${DEMO_KAFKA_EVENT_CUSTOMER_ACCOUNT_CREATED_AGGREGATE_TYPE:customer}

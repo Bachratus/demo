@@ -1,4 +1,4 @@
-package com.bachratus.demo.infra.kafka;
+package com.bachratus.demo.infra.kafka.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -8,6 +8,7 @@ import java.util.Objects;
 
 @ConfigurationProperties(prefix = "app.kafka")
 public record AppKafkaProperties(
+        Boolean enabled,
         Producer producer,
         Listener listener,
         Outbox outbox,
@@ -15,6 +16,7 @@ public record AppKafkaProperties(
 ) {
 
     public AppKafkaProperties {
+        enabled = enabled == null ? Boolean.TRUE : enabled;
         producer = producer == null ? Producer.defaults() : producer;
         listener = listener == null ? Listener.defaults() : listener;
         outbox = outbox == null ? Outbox.defaults() : outbox;
@@ -117,13 +119,22 @@ public record AppKafkaProperties(
     public record Topic(
             String name,
             int concurrency,
-            String dltName
+            String dltName,
+            String eventType,
+            String aggregateType
     ) {
 
         public Topic {
             name = requireText(name, "Kafka topic name");
             if (concurrency < 1) throw new IllegalArgumentException("Kafka topic concurrency must be positive");
             dltName = dltName == null || dltName.isBlank() ? name + ".dlt" : dltName.trim();
+            eventType = requireText(eventType, "Kafka event type");
+            aggregateType = requireText(aggregateType, "Kafka aggregate type");
+        }
+
+        public String eventType(int schemaVersion) {
+            if (schemaVersion < 1) throw new IllegalArgumentException("Kafka event schemaVersion must be positive");
+            return eventType + ".v" + schemaVersion;
         }
 
         private static String requireText(String value, String fieldName) {

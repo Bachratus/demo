@@ -1,4 +1,4 @@
-package com.bachratus.demo.infra.kafka;
+package com.bachratus.demo.infra.kafka.config;
 
 import com.bachratus.demo.infra.db.outbox.OutboxEventJpa;
 import com.bachratus.demo.infra.db.outbox.OutboxEventJpaRepository;
@@ -25,7 +25,12 @@ import java.util.stream.Stream;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "app.kafka.outbox", name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(
+        prefix = "app.kafka",
+        name = {"enabled", "outbox.enabled"},
+        havingValue = "true",
+        matchIfMissing = true
+)
 public class OutboxKafkaPublisher {
 
     private static final int MAX_ERROR_LENGTH = 2_000;

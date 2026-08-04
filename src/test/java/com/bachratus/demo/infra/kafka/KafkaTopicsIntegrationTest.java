@@ -1,7 +1,7 @@
 package com.bachratus.demo.infra.kafka;
 
-import com.bachratus.demo.application.events.CustomerAccountCreatedEvent;
 import com.bachratus.demo.config.BaseFullIntegrationTest;
+import com.bachratus.demo.infra.kafka.config.AppKafkaProperties;
 import org.apache.kafka.clients.admin.TopicDescription;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +18,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 })
 class KafkaTopicsIntegrationTest extends BaseFullIntegrationTest {
 
+    private static final String CUSTOMER_ACCOUNT_CREATED_EVENT_KEY = "customer-account-created";
+
     @Autowired
     KafkaAdmin kafkaAdmin;
 
@@ -26,15 +28,16 @@ class KafkaTopicsIntegrationTest extends BaseFullIntegrationTest {
 
     @Test
     void shouldCreateKafkaTopicsBeforeTestsStart() {
-        AppKafkaProperties.Topic topic = kafkaProperties.topic(CustomerAccountCreatedEvent.TOPIC_KEY);
+        String topicName = kafkaProperties.topicName(CUSTOMER_ACCOUNT_CREATED_EVENT_KEY);
+        String dltName = kafkaProperties.deadLetterTopicName(CUSTOMER_ACCOUNT_CREATED_EVENT_KEY, topicName);
 
         Map<String, TopicDescription> topics = kafkaAdmin.describeTopics(
-                topic.name(),
-                topic.dltName()
+                topicName,
+                dltName
         );
 
-        assertThat(topics).containsKeys(topic.name(), topic.dltName());
-        assertThat(topics.get(topic.name()).partitions()).hasSize(3);
-        assertThat(topics.get(topic.dltName()).partitions()).hasSize(3);
+        assertThat(topics).containsKeys(topicName, dltName);
+        assertThat(topics.get(topicName).partitions()).hasSize(3);
+        assertThat(topics.get(dltName).partitions()).hasSize(3);
     }
 }

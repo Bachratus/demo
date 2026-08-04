@@ -1,10 +1,11 @@
 package com.bachratus.demo.infra.kafka;
 
-import com.bachratus.demo.application.events.CustomerAccountCreatedEvent;
 import com.bachratus.demo.application.events.OutboxEventDraft;
 import com.bachratus.demo.infra.db.outbox.OutboxEventJpa;
 import com.bachratus.demo.infra.db.outbox.OutboxEventJpaRepository;
 import com.bachratus.demo.infra.db.outbox.OutboxStatus;
+import com.bachratus.demo.infra.kafka.config.OutboxKafkaPublisher;
+import com.bachratus.demo.infra.kafka.config.AppKafkaProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,6 +34,7 @@ class OutboxKafkaPublisherTest {
 
     private static final Instant NOW = Instant.parse("2026-01-01T12:00:00Z");
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final String CUSTOMER_ACCOUNT_CREATED_EVENT_KEY = "customer-account-created";
 
     @Mock
     OutboxEventJpaRepository repository;
@@ -80,7 +82,7 @@ class OutboxKafkaPublisherTest {
             verify(kafkaTemplate).send(recordCaptor.capture());
 
             ProducerRecord<String, Object> record = recordCaptor.getValue();
-            assertThat(record.topic()).isEqualTo("demo.customer-account-created.v1");
+            assertThat(record.topic()).isEqualTo("store.customer-account-created.v1");
             assertThat(record.key()).isEqualTo(event.getAggregateId());
             assertThat(record.headers().lastHeader("event-id")).isNotNull();
             assertThat(record.headers().lastHeader("event-type")).isNotNull();
@@ -141,9 +143,9 @@ class OutboxKafkaPublisherTest {
             verify(kafkaTemplate, times(2)).send(recordCaptor.capture());
 
             assertThat(recordCaptor.getAllValues().get(0).topic())
-                    .isEqualTo("demo.customer-account-created.v1");
+                    .isEqualTo("store.customer-account-created.v1");
             assertThat(recordCaptor.getAllValues().get(1).topic())
-                    .isEqualTo("demo.customer-account-created.v1.dlt");
+                    .isEqualTo("store.customer-account-created.v1.dlt");
             assertThat(recordCaptor.getAllValues().get(1).headers().lastHeader("dlt-original-topic"))
                     .isNotNull();
         }
@@ -154,10 +156,10 @@ class OutboxKafkaPublisherTest {
 
         OutboxEventDraft draft = new OutboxEventDraft(
                 UUID.randomUUID(),
-                CustomerAccountCreatedEvent.TOPIC_KEY,
-                CustomerAccountCreatedEvent.AGGREGATE_TYPE,
+                CUSTOMER_ACCOUNT_CREATED_EVENT_KEY,
+                "customer",
                 customerId.toString(),
-                CustomerAccountCreatedEvent.EVENT_TYPE,
+                "customer.account-created.v1",
                 OBJECT_MAPPER.createObjectNode()
                         .put("schemaVersion", 1)
                         .put("customerId", customerId.toString())
@@ -168,22 +170,25 @@ class OutboxKafkaPublisherTest {
 
         return OutboxEventJpa.from(
                 draft,
-                "demo.customer-account-created.v1",
+                "store.customer-account-created.v1",
                 Instant.parse("2026-01-01T10:00:00Z")
         );
     }
 
     private AppKafkaProperties kafkaProperties(int maxAttempts) {
         return new AppKafkaProperties(
+                true,
                 new AppKafkaProperties.Producer(45_000, 15_000, 5, 50_000),
                 new AppKafkaProperties.Listener(1_000, 3),
                 new AppKafkaProperties.Outbox(true, 10, 500, 1_000, maxAttempts),
                 Map.of(
-                        CustomerAccountCreatedEvent.TOPIC_KEY,
+                        CUSTOMER_ACCOUNT_CREATED_EVENT_KEY,
                         new AppKafkaProperties.Topic(
-                                "demo.customer-account-created.v1",
+                                "store.customer-account-created.v1",
                                 3,
-                                "demo.customer-account-created.v1.dlt"
+                                "store.customer-account-created.v1.dlt",
+                                "customer.account-created",
+                                "customer"
                         )
                 )
         );

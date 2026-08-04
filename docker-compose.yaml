@@ -130,14 +130,14 @@ services:
 
         kafka-topics --bootstrap-server "kafka1:9092,kafka2:9092,kafka3:9092" \
           --create --if-not-exists \
-          --topic "${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED:-demo.customer-account-created.v1}" \
+          --topic "${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED:-store.customer-account-created.v1}" \
           --partitions "${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED_PARTITIONS:-3}" \
           --replication-factor "${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED_REPLICATION_FACTOR:-3}" \
           --config "min.insync.replicas=${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED_MIN_ISR:-2}"
 
         kafka-topics --bootstrap-server "kafka1:9092,kafka2:9092,kafka3:9092" \
           --create --if-not-exists \
-          --topic "${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED_DLT:-demo.customer-account-created.v1.dlt}" \
+          --topic "${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED_DLT:-store.customer-account-created.v1.dlt}" \
           --partitions "${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED_PARTITIONS:-3}" \
           --replication-factor "${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED_REPLICATION_FACTOR:-3}" \
           --config "min.insync.replicas=${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED_MIN_ISR:-2}"
@@ -270,9 +270,9 @@ services:
       - bachratus_net
     environment:
       JAVA_OPTS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5002"
-      DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED: ${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED:-demo.customer-account-created.v1}
+      DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED: ${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED:-store.customer-account-created.v1}
       DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED_CONCURRENCY: ${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED_CONCURRENCY:-3}
-      DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED_DLT: ${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED_DLT:-demo.customer-account-created.v1.dlt}
+      DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED_DLT: ${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED_DLT:-store.customer-account-created.v1.dlt}
     healthcheck:
       test: [ "CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -q '\"status\":\"UP\"' || exit 1" ]
       interval: 10s

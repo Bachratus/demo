@@ -1,5 +1,8 @@
 package com.bachratus.demo.infra.kafka;
 
+import com.bachratus.demo.infra.kafka.config.KafkaDeadLetterTopicResolver;
+import com.bachratus.demo.infra.kafka.config.KafkaListenerErrorHandlingConfiguration;
+import com.bachratus.demo.infra.kafka.config.AppKafkaProperties;
 import org.junit.jupiter.api.Test;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.listener.DefaultErrorHandler;
@@ -15,15 +18,18 @@ class KafkaListenerErrorHandlingConfigurationTest {
     void shouldCreateDefaultErrorHandlerWithDeadLetterRecoverer() {
         // given
         AppKafkaProperties properties = new AppKafkaProperties(
+                true,
                 new AppKafkaProperties.Producer(45_000, 15_000, 5, 50_000),
                 new AppKafkaProperties.Listener(1_000, 3),
                 new AppKafkaProperties.Outbox(true, 100, 500, 10_000, 5),
                 Map.of(
                         "customer-account-created",
                         new AppKafkaProperties.Topic(
-                                "demo.customer-account-created.v1",
+                                "store.customer-account-created.v1",
                                 3,
-                                "demo.customer-account-created.v1.dlt"
+                                "store.customer-account-created.v1.dlt",
+                                "customer.account-created",
+                                "customer"
                         )
                 )
         );

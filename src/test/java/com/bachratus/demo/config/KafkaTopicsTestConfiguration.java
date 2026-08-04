@@ -1,15 +1,19 @@
 package com.bachratus.demo.config;
 
-import com.bachratus.demo.application.events.CustomerAccountCreatedEvent;
-import com.bachratus.demo.infra.kafka.AppKafkaProperties;
+import com.bachratus.demo.infra.kafka.config.AppKafkaProperties;
+import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.common.config.TopicConfig;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.KafkaAdmin;
 
+import java.util.stream.Stream;
+
 @TestConfiguration(proxyBeanMethods = false)
+@ConditionalOnProperty(prefix = "app.kafka", name = "enabled", havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties(AppKafkaProperties.class)
 public class KafkaTopicsTestConfiguration {
 
@@ -19,19 +23,23 @@ public class KafkaTopicsTestConfiguration {
 
     @Bean
     KafkaAdmin.NewTopics demoKafkaTopics(AppKafkaProperties properties) {
-        AppKafkaProperties.Topic topic = properties.topic(CustomerAccountCreatedEvent.TOPIC_KEY);
+        NewTopic[] topics = properties.topics()
+                .values()
+                .stream()
+                .flatMap(topic -> Stream.of(
+                        topic(topic.name()),
+                        topic(topic.dltName())
+                ))
+                .toArray(NewTopic[]::new);
 
-        return new KafkaAdmin.NewTopics(
-                TopicBuilder.name(topic.name())
-                        .partitions(PARTITIONS)
-                        .replicas(REPLICATION_FACTOR)
-                        .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, String.valueOf(MIN_IN_SYNC_REPLICAS))
-                        .build(),
-                TopicBuilder.name(topic.dltName())
-                        .partitions(PARTITIONS)
-                        .replicas(REPLICATION_FACTOR)
-                        .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, String.valueOf(MIN_IN_SYNC_REPLICAS))
-                        .build()
-        );
+        return new KafkaAdmin.NewTopics(topics);
+    }
+
+    private NewTopic topic(String name) {
+        return TopicBuilder.name(name)
+                .partitions(PARTITIONS)
+                .replicas(REPLICATION_FACTOR)
+                .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, String.valueOf(MIN_IN_SYNC_REPLICAS))
+                .build();
     }
 }

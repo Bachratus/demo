@@ -1,8 +1,10 @@
 package com.bachratus.demo.application.useCases;
 
 import com.bachratus.demo.application.events.CustomerAccountCreatedEvent;
+import com.bachratus.demo.application.events.OutboxApplicationEvent;
 import com.bachratus.demo.application.events.OutboxEventDraft;
 import com.bachratus.demo.application.ports.out.CustomerRepository;
+import com.bachratus.demo.application.ports.out.OutboxEventDraftFactory;
 import com.bachratus.demo.application.ports.out.OutboxEventStore;
 import com.bachratus.demo.application.request.CreateCustomerAccountRequest;
 import com.bachratus.demo.domain.customer.Customer;
@@ -18,14 +20,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.Clock;
 import java.time.Instant;
-import java.time.ZoneOffset;
+import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -33,6 +34,8 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class CreateCustomerAccountUseCaseImplTest {
+
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @Mock
     CustomerRepository customerRepository;
@@ -42,19 +45,21 @@ class CreateCustomerAccountUseCaseImplTest {
     @Mock
     OutboxEventStore outboxEventStore;
 
+    @Mock
+    OutboxEventDraftFactory outboxEventDraftFactory;
+
     @Captor
     ArgumentCaptor<Customer> customerArgumentCaptor;
 
     @Captor
-    ArgumentCaptor<OutboxEventDraft> outboxEventCaptor;
+    ArgumentCaptor<OutboxApplicationEvent> outboxEventCaptor;
 
     @BeforeEach
     void setUp() {
         createCustomerAccountUseCase = new CreateCustomerAccountUseCaseImpl(
                 customerRepository,
                 outboxEventStore,
-                new ObjectMapper(),
-                Clock.fixed(Instant.parse("2026-01-01T12:00:00Z"), ZoneOffset.UTC)
+                outboxEventDraftFactory
         );
     }
 
@@ -84,7 +89,7 @@ class CreateCustomerAccountUseCaseImplTest {
 
             verify(customerRepository).findByUserId(userId);
             verify(customerRepository, never()).createNewCustomer(any(Customer.class));
-            verifyNoInteractions(outboxEventStore);
+            verifyNoInteractions(outboxEventDraftFactory, outboxEventStore);
             verifyNoMoreInteractions(customerRepository);
         }
 
@@ -100,16 +105,21 @@ class CreateCustomerAccountUseCaseImplTest {
             when(customerRepository.createNewCustomer(any(Customer.class)))
                     .thenAnswer(invocation -> invocation.getArgument(0));
 
+            OutboxEventDraft draft = outboxDraft();
+            when(outboxEventDraftFactory.create(any(OutboxApplicationEvent.class)))
+                    .thenReturn(draft);
+
             // when
             Customer result = createCustomerAccountUseCase.create(request);
 
             // then
             verify(customerRepository).findByUserId(userId);
             verify(customerRepository).createNewCustomer(customerArgumentCaptor.capture());
-            verify(outboxEventStore).append(outboxEventCaptor.capture());
+            verify(outboxEventDraftFactory).create(outboxEventCaptor.capture());
+            verify(outboxEventStore).append(draft);
 
             Customer captured = customerArgumentCaptor.getValue();
-            OutboxEventDraft outboxEvent = outboxEventCaptor.getValue();
+            OutboxApplicationEvent outboxEvent = outboxEventCaptor.getValue();
 
             assertThat(captured).isNotNull();
             assertThat(captured.getId()).isNotNull();
@@ -119,18 +129,32 @@ class CreateCustomerAccountUseCaseImplTest {
 
             assertThat(result).isSameAs(captured);
 
-            assertThat(outboxEvent.topicKey()).isEqualTo(CustomerAccountCreatedEvent.TOPIC_KEY);
-            assertThat(outboxEvent.aggregateType()).isEqualTo(CustomerAccountCreatedEvent.AGGREGATE_TYPE);
+            assertThat(outboxEvent).isInstanceOf(CustomerAccountCreatedEvent.class);
+            assertThat(outboxEvent.eventKey()).isEqualTo("customer-account-created");
             assertThat(outboxEvent.aggregateId()).isEqualTo(captured.getId().value().toString());
-            assertThat(outboxEvent.eventType()).isEqualTo(CustomerAccountCreatedEvent.EVENT_TYPE);
-            assertThat(outboxEvent.occurredAt()).isEqualTo(Instant.parse("2026-01-01T12:00:00Z"));
-            assertThat(outboxEvent.payload().get("schemaVersion").asInt()).isEqualTo(1);
-            assertThat(outboxEvent.payload().get("customerId").asText()).isEqualTo(captured.getId().value().toString());
-            assertThat(outboxEvent.payload().get("userId").asText()).isEqualTo("123");
-            assertThat(outboxEvent.payload().get("displayName").asText()).isEqualTo("Me");
+            assertThat(outboxEvent.schemaVersion()).isEqualTo(1);
+
+            CustomerAccountCreatedEvent customerAccountCreatedEvent = (CustomerAccountCreatedEvent) outboxEvent;
+            assertThat(customerAccountCreatedEvent.customerId()).isEqualTo(captured.getId().value());
+            assertThat(customerAccountCreatedEvent.userId()).isEqualTo("123");
+            assertThat(customerAccountCreatedEvent.displayName()).isEqualTo("Me");
 
             verifyNoMoreInteractions(customerRepository);
+            verifyNoMoreInteractions(outboxEventDraftFactory);
             verifyNoMoreInteractions(outboxEventStore);
         }
+    }
+
+    private OutboxEventDraft outboxDraft() {
+        return new OutboxEventDraft(
+                UUID.randomUUID(),
+                "customer-account-created",
+                "customer",
+                "aggregate-id",
+                "customer.account-created.v1",
+                OBJECT_MAPPER.createObjectNode(),
+                Map.of(),
+                Instant.parse("2026-01-01T12:00:00Z")
+        );
     }
 }

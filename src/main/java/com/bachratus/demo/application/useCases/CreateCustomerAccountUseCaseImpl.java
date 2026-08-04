@@ -1,8 +1,8 @@
 package com.bachratus.demo.application.useCases;
 
 import com.bachratus.demo.application.events.CustomerAccountCreatedEvent;
-import com.bachratus.demo.application.events.OutboxEventDraft;
 import com.bachratus.demo.application.ports.out.CustomerRepository;
+import com.bachratus.demo.application.ports.out.OutboxEventDraftFactory;
 import com.bachratus.demo.application.ports.out.OutboxEventStore;
 import com.bachratus.demo.application.request.CreateCustomerAccountRequest;
 import com.bachratus.demo.application.ports.in.CreateCustomerAccountUseCase;
@@ -11,13 +11,10 @@ import com.bachratus.demo.domain.customer.CustomerId;
 import com.bachratus.demo.domain.customer.CustomerDisplayName;
 import com.bachratus.demo.domain.customer.UserId;
 import com.bachratus.demo.domain.shared.exception.AlreadyExistsException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.Clock;
-import java.time.Instant;
 import java.util.Optional;
 
 @Transactional
@@ -27,8 +24,7 @@ public class CreateCustomerAccountUseCaseImpl implements CreateCustomerAccountUs
 
     private final CustomerRepository customerRepository;
     private final OutboxEventStore outboxEventStore;
-    private final ObjectMapper objectMapper;
-    private final Clock clock;
+    private final OutboxEventDraftFactory outboxEventDraftFactory;
 
     @Override
     public Customer create(
@@ -50,21 +46,9 @@ public class CreateCustomerAccountUseCaseImpl implements CreateCustomerAccountUs
 
         Customer savedCustomer = customerRepository.createNewCustomer(customer);
 
-        outboxEventStore.append(toCustomerAccountCreatedEvent(savedCustomer));
+        CustomerAccountCreatedEvent event = CustomerAccountCreatedEvent.from(savedCustomer);
+        outboxEventStore.append(outboxEventDraftFactory.create(event));
 
         return savedCustomer;
-    }
-
-    private OutboxEventDraft toCustomerAccountCreatedEvent(Customer customer) {
-        CustomerAccountCreatedEvent payload = CustomerAccountCreatedEvent.from(customer);
-
-        return OutboxEventDraft.create(
-                CustomerAccountCreatedEvent.TOPIC_KEY,
-                CustomerAccountCreatedEvent.AGGREGATE_TYPE,
-                customer.getId().value().toString(),
-                CustomerAccountCreatedEvent.EVENT_TYPE,
-                objectMapper.valueToTree(payload),
-                Instant.now(clock)
-        );
     }
 }

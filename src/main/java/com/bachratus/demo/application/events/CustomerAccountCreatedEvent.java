@@ -10,20 +10,29 @@ public record CustomerAccountCreatedEvent(
         UUID customerId,
         String userId,
         String displayName
-) {
+) implements OutboxApplicationEvent {
 
-    public static final String TOPIC_KEY = "customer-account-created";
-    public static final String EVENT_TYPE = "customer.account-created.v1";
-    public static final String AGGREGATE_TYPE = "customer";
+    private static final int SCHEMA_VERSION = 1;
+    private static final String EVENT_KEY = "customer-account-created";
 
     public static CustomerAccountCreatedEvent from(Customer customer) {
         CustomerDisplayName displayName = customer.getCustomerDisplayName();
 
         return new CustomerAccountCreatedEvent(
-                1,
+                SCHEMA_VERSION,
                 customer.getId().value(),
                 customer.getUserId().value(),
                 displayName == null ? null : displayName.value()
         );
+    }
+
+    @Override
+    public String eventKey() {
+        return EVENT_KEY;
+    }
+
+    @Override
+    public String aggregateId() {
+        return customerId.toString();
     }
 }

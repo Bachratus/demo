@@ -1,5 +1,6 @@
 package com.bachratus.demo.infra.kafka;
 
+import com.bachratus.demo.infra.kafka.config.AppKafkaProperties;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -16,17 +17,45 @@ class AppKafkaPropertiesTest {
     class TopicResolution {
 
         @Test
+        void shouldEnableKafkaByDefault() {
+            // given
+            AppKafkaProperties properties = properties();
+
+            // when & then
+            assertThat(properties.enabled()).isTrue();
+        }
+
+        @Test
+        void shouldAllowDisablingKafkaIntegration() {
+            // given
+            AppKafkaProperties properties = new AppKafkaProperties(
+                    false,
+                    producer(),
+                    listener(),
+                    outbox(),
+                    Map.of("customer-account-created", topic())
+            );
+
+            // when & then
+            assertThat(properties.enabled()).isFalse();
+        }
+
+        @Test
         void shouldReturnConfiguredTopicAndDltNames() {
             // given
             AppKafkaProperties properties = properties();
 
             // when & then
             assertThat(properties.topicName("customer-account-created"))
-                    .isEqualTo("demo.customer-account-created.v1");
+                    .isEqualTo("store.customer-account-created.v1");
             assertThat(properties.deadLetterTopicName("customer-account-created", "ignored"))
-                    .isEqualTo("demo.customer-account-created.v1.dlt");
-            assertThat(properties.deadLetterTopicNameForTopic("demo.customer-account-created.v1"))
-                    .isEqualTo("demo.customer-account-created.v1.dlt");
+                    .isEqualTo("store.customer-account-created.v1.dlt");
+            assertThat(properties.deadLetterTopicNameForTopic("store.customer-account-created.v1"))
+                    .isEqualTo("store.customer-account-created.v1.dlt");
+            assertThat(properties.topic("customer-account-created").eventType(1))
+                    .isEqualTo("customer.account-created.v1");
+            assertThat(properties.topic("customer-account-created").aggregateType())
+                    .isEqualTo("customer");
         }
 
         @Test
@@ -60,6 +89,7 @@ class AppKafkaPropertiesTest {
         void shouldRejectSendResultTimeoutNotGreaterThanDeliveryTimeout() {
             // when & then
             assertThatThrownBy(() -> new AppKafkaProperties(
+                    true,
                     new AppKafkaProperties.Producer(45_000, 15_000, 5, 45_000),
                     listener(),
                     outbox(),
@@ -71,6 +101,7 @@ class AppKafkaPropertiesTest {
 
     private AppKafkaProperties properties() {
         return new AppKafkaProperties(
+                true,
                 producer(),
                 listener(),
                 outbox(),
@@ -92,9 +123,11 @@ class AppKafkaPropertiesTest {
 
     private AppKafkaProperties.Topic topic() {
         return new AppKafkaProperties.Topic(
-                "demo.customer-account-created.v1",
+                "store.customer-account-created.v1",
                 3,
-                "demo.customer-account-created.v1.dlt"
+                "store.customer-account-created.v1.dlt",
+                "customer.account-created",
+                "customer"
         );
     }
 }
