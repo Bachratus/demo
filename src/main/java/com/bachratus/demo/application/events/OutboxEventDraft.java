@@ -3,7 +3,6 @@ package com.bachratus.demo.application.events;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.time.Instant;
-import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -14,7 +13,6 @@ public record OutboxEventDraft(
         String aggregateId,
         String eventType,
         JsonNode payload,
-        Map<String, String> headers,
         Instant occurredAt
 ) {
 
@@ -29,7 +27,6 @@ public record OutboxEventDraft(
             throw new IllegalArgumentException("payload must be a parsed JSON object");
         }
         payload = payload.deepCopy();
-        headers = headers == null ? Map.of() : Map.copyOf(headers);
         Objects.requireNonNull(occurredAt, "occurredAt cannot be null");
     }
 
@@ -48,7 +45,6 @@ public record OutboxEventDraft(
                 aggregateId,
                 eventType,
                 payload,
-                Map.of(),
                 occurredAt
         );
     }

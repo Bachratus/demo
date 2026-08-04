@@ -131,7 +131,6 @@ public class OutboxKafkaPublisher {
                 event.getPayload()
         );
 
-        event.getHeaders().forEach((key, value) -> addHeader(record, key, value));
         addHeader(record, "event-id", event.getId().toString());
         addHeader(record, "event-type", event.getEventType());
         addHeader(record, "aggregate-type", event.getAggregateType());

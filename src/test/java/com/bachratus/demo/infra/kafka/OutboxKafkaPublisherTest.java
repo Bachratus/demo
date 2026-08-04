@@ -164,7 +164,6 @@ class OutboxKafkaPublisherTest {
                         .put("schemaVersion", 1)
                         .put("customerId", customerId.toString())
                         .put("userId", "user-123"),
-                Map.of("trace-id", "trace-123"),
                 Instant.parse("2026-01-01T10:00:00Z")
         );
 

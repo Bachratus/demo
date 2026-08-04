@@ -24,7 +24,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -153,7 +152,6 @@ class CreateCustomerAccountUseCaseImplTest {
                 "aggregate-id",
                 "customer.account-created.v1",
                 OBJECT_MAPPER.createObjectNode(),
-                Map.of(),
                 Instant.parse("2026-01-01T12:00:00Z")
         );
     }

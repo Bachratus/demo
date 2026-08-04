@@ -8,7 +8,6 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
-import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -43,10 +42,6 @@ public class OutboxEventJpa {
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "payload", nullable = false, columnDefinition = "jsonb", updatable = false)
     private JsonNode payload;
-
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "headers", nullable = false, columnDefinition = "jsonb", updatable = false)
-    private Map<String, String> headers;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
@@ -91,7 +86,6 @@ public class OutboxEventJpa {
         event.aggregateId = draft.aggregateId();
         event.eventType = draft.eventType();
         event.payload = draft.payload().deepCopy();
-        event.headers = Map.copyOf(draft.headers());
         event.status = OutboxStatus.PENDING;
         event.retryCount = 0;
         event.nextAttemptAt = now;

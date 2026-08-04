@@ -46,7 +46,6 @@ class KafkaOutboxEventDraftFactoryTest {
         assertThat(draft.aggregateId()).isEqualTo(customerId.toString());
         assertThat(draft.eventType()).isEqualTo("customer.account-created.v1");
         assertThat(draft.occurredAt()).isEqualTo(NOW);
-        assertThat(draft.headers()).isEmpty();
         assertThat(draft.payload().get("schemaVersion").asInt()).isEqualTo(1);
         assertThat(draft.payload().get("customerId").asText()).isEqualTo(customerId.toString());
         assertThat(draft.payload().get("userId").asText()).isEqualTo("user-123");
