@@ -22,6 +22,9 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
+/**
+ * Publishes persisted outbox events to Kafka and moves exhausted events to their dead-letter topics.
+ */
 @Slf4j
 @Component
 @RequiredArgsConstructor

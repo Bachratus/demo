@@ -12,6 +12,9 @@ import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.util.backoff.FixedBackOff;
 
+/**
+ * Configures Kafka listener retry handling and dead-letter publishing for consumer failures.
+ */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnProperty(prefix = "app.kafka", name = "enabled", havingValue = "true", matchIfMissing = true)
 @RequiredArgsConstructor

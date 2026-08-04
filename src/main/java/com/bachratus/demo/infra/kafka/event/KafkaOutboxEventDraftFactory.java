@@ -12,6 +12,9 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.Objects;
 
+/**
+ * Creates outbox event drafts from application events by applying Kafka topic configuration.
+ */
 @Component
 @RequiredArgsConstructor
 public class KafkaOutboxEventDraftFactory implements OutboxEventDraftFactory {

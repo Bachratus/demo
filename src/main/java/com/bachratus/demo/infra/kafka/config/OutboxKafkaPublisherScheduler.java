@@ -6,6 +6,9 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+/**
+ * Periodically triggers Kafka publication for events waiting in the outbox table.
+ */
 @Slf4j
 @Component
 @RequiredArgsConstructor

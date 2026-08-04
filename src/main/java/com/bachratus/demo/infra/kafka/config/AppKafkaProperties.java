@@ -6,6 +6,12 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * Application-level Kafka integration settings bound from the {@code app.kafka} configuration tree.
+ *
+ * <p>The properties describe feature switches, producer wait budgets, listener retry policy,
+ * outbox polling policy, and logical event-to-topic mappings used by the outbox pipeline.</p>
+ */
 @ConfigurationProperties(prefix = "app.kafka")
 public record AppKafkaProperties(
         Boolean enabled,
@@ -50,6 +56,9 @@ public record AppKafkaProperties(
                 .orElse(normalizedTopicName + ".dlt");
     }
 
+    /**
+     * Producer timing settings used by Kafka clients and the outbox publisher.
+     */
     public record Producer(
             long deliveryTimeoutMs,
             long requestTimeoutMs,
@@ -75,6 +84,9 @@ public record AppKafkaProperties(
         }
     }
 
+    /**
+     * Listener retry settings applied to Kafka consumers before records are sent to a dead-letter topic.
+     */
     public record Listener(
             long retryIntervalMs,
             int maxAttempts
@@ -90,6 +102,9 @@ public record AppKafkaProperties(
         }
     }
 
+    /**
+     * Outbox publisher settings that control polling, batching, retries, and publication enablement.
+     */
     public record Outbox(
             boolean enabled,
             int batchSize,
@@ -110,6 +125,9 @@ public record AppKafkaProperties(
         }
     }
 
+    /**
+     * Mapping between an application event key and its Kafka topic metadata.
+     */
     public record Topic(
             String name,
             int concurrency,
