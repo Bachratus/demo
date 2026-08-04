@@ -95,9 +95,6 @@ class AppKafkaPropertiesTest {
         return new AppKafkaProperties.Topic(
                 "demo.customer-account-created.v1",
                 3,
-                3,
-                3,
-                2,
                 "demo.customer-account-created.v1.dlt"
         );
     }

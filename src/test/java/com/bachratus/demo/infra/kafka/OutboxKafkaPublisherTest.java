@@ -184,9 +184,6 @@ class OutboxKafkaPublisherTest {
                         new AppKafkaProperties.Topic(
                                 "demo.customer-account-created.v1",
                                 3,
-                                3,
-                                1,
-                                1,
                                 "demo.customer-account-created.v1.dlt"
                         )
                 )

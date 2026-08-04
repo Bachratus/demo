@@ -1,6 +1,6 @@
 networks:
   bachratus_net:
-    name: bachratus_net
+    name: ${BACHRATUS_DOCKER_NETWORK:-bachratus_net}
     driver: bridge
 
 volumes:
@@ -19,17 +19,16 @@ services:
   kafka1:
     image: confluentinc/cp-kafka:7.8.0
     hostname: kafka1
-    container_name: kafka1
-#    ports:
-#      - "9092:9092"
+    ports:
+      - "${KAFKA1_EXTERNAL_PORT:-19092}:19092"
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_BROKER_ID: 1
       KAFKA_PROCESS_ROLES: 'broker,controller'
       KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1:9093,2@kafka2:9093,3@kafka3:9093'
-      KAFKA_LISTENERS: 'PLAINTEXT://kafka1:9092,CONTROLLER://kafka1:9093'
-      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka1:9092'
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT'
+      KAFKA_LISTENERS: 'PLAINTEXT://kafka1:9092,PLAINTEXT_HOST://0.0.0.0:19092,CONTROLLER://kafka1:9093'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka1:9092,PLAINTEXT_HOST://${KAFKA_EXTERNAL_HOST:-localhost}:${KAFKA1_EXTERNAL_PORT:-19092}'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
       KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
       KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
       CLUSTER_ID: 'EmptNWtoR4GGWx-BH6nGLQ'
@@ -50,17 +49,16 @@ services:
   kafka2:
     image: confluentinc/cp-kafka:7.8.0
     hostname: kafka2
-    container_name: kafka2
-#    ports:
-#      - "9094:9092"
+    ports:
+      - "${KAFKA2_EXTERNAL_PORT:-19094}:19094"
     environment:
       KAFKA_NODE_ID: 2
       KAFKA_BROKER_ID: 2
       KAFKA_PROCESS_ROLES: 'broker,controller'
       KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1:9093,2@kafka2:9093,3@kafka3:9093'
-      KAFKA_LISTENERS: 'PLAINTEXT://kafka2:9092,CONTROLLER://kafka2:9093'
-      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka2:9092'
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT'
+      KAFKA_LISTENERS: 'PLAINTEXT://kafka2:9092,PLAINTEXT_HOST://0.0.0.0:19094,CONTROLLER://kafka2:9093'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka2:9092,PLAINTEXT_HOST://${KAFKA_EXTERNAL_HOST:-localhost}:${KAFKA2_EXTERNAL_PORT:-19094}'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
       KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
       KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
       CLUSTER_ID: 'EmptNWtoR4GGWx-BH6nGLQ'
@@ -81,17 +79,16 @@ services:
   kafka3:
     image: confluentinc/cp-kafka:7.8.0
     hostname: kafka3
-    container_name: kafka3
-#    ports:
-#      - "9096:9092"
+    ports:
+      - "${KAFKA3_EXTERNAL_PORT:-19096}:19096"
     environment:
       KAFKA_NODE_ID: 3
       KAFKA_BROKER_ID: 3
       KAFKA_PROCESS_ROLES: 'broker,controller'
       KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1:9093,2@kafka2:9093,3@kafka3:9093'
-      KAFKA_LISTENERS: 'PLAINTEXT://kafka3:9092,CONTROLLER://kafka3:9093'
-      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka3:9092'
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT'
+      KAFKA_LISTENERS: 'PLAINTEXT://kafka3:9092,PLAINTEXT_HOST://0.0.0.0:19096,CONTROLLER://kafka3:9093'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka3:9092,PLAINTEXT_HOST://${KAFKA_EXTERNAL_HOST:-localhost}:${KAFKA3_EXTERNAL_PORT:-19096}'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
       KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
       KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
       CLUSTER_ID: 'EmptNWtoR4GGWx-BH6nGLQ'
@@ -108,6 +105,44 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  kafka-topics-init:
+    image: confluentinc/cp-kafka:7.8.0
+    depends_on:
+      kafka1:
+        condition: service_healthy
+      kafka2:
+        condition: service_healthy
+      kafka3:
+        condition: service_healthy
+    networks:
+      - bachratus_net
+    command:
+      - bash
+      - -c
+      - |
+        set -e
+
+        until kafka-topics --bootstrap-server "kafka1:9092,kafka2:9092,kafka3:9092" --list >/dev/null 2>&1; do
+          echo "Waiting for Kafka brokers..."
+          sleep 2
+        done
+
+        kafka-topics --bootstrap-server "kafka1:9092,kafka2:9092,kafka3:9092" \
+          --create --if-not-exists \
+          --topic "${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED:-demo.customer-account-created.v1}" \
+          --partitions "${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED_PARTITIONS:-3}" \
+          --replication-factor "${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED_REPLICATION_FACTOR:-3}" \
+          --config "min.insync.replicas=${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED_MIN_ISR:-2}"
+
+        kafka-topics --bootstrap-server "kafka1:9092,kafka2:9092,kafka3:9092" \
+          --create --if-not-exists \
+          --topic "${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED_DLT:-demo.customer-account-created.v1.dlt}" \
+          --partitions "${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED_PARTITIONS:-3}" \
+          --replication-factor "${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED_REPLICATION_FACTOR:-3}" \
+          --config "min.insync.replicas=${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED_MIN_ISR:-2}"
+
+        echo "Kafka topics initialized"
 
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
@@ -129,7 +164,7 @@ services:
       - bachratus_net
     image: redis:7
     ports:
-      - "6379:6379"
+      - "${SPRING_REDIS_EXTERNAL_PORT:-6379}:6379"
     restart: unless-stopped
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
@@ -219,7 +254,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_DEMO_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DEMO_DB}
     ports:
-      - "45432:5432"
+      - "${POSTGRES_DEMO_EXTERNAL_PORT:-45432}:5432"
     networks:
       - bachratus_net
     volumes:
@@ -246,10 +281,15 @@ services:
         condition: service_healthy
       kafka3:
         condition: service_healthy
+      kafka-topics-init:
+        condition: service_completed_successfully
     networks:
       - bachratus_net
     environment:
       JAVA_OPTS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5002"
+      DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED: ${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED:-demo.customer-account-created.v1}
+      DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED_CONCURRENCY: ${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED_CONCURRENCY:-3}
+      DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED_DLT: ${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED_DLT:-demo.customer-account-created.v1.dlt}
     healthcheck:
       test: [ "CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -q '\"status\":\"UP\"' || exit 1" ]
       interval: 10s

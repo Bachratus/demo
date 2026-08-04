@@ -117,21 +117,12 @@ public record AppKafkaProperties(
     public record Topic(
             String name,
             int concurrency,
-            int partitions,
-            int replicationFactor,
-            int minInSyncReplicas,
             String dltName
     ) {
 
         public Topic {
             name = requireText(name, "Kafka topic name");
             if (concurrency < 1) throw new IllegalArgumentException("Kafka topic concurrency must be positive");
-            if (partitions < 1) throw new IllegalArgumentException("Kafka topic partitions must be positive");
-            if (replicationFactor < 1) throw new IllegalArgumentException("Kafka topic replicationFactor must be positive");
-            if (minInSyncReplicas < 1) throw new IllegalArgumentException("Kafka topic minInSyncReplicas must be positive");
-            if (minInSyncReplicas > replicationFactor) {
-                throw new IllegalArgumentException("Kafka topic minInSyncReplicas cannot be greater than replicationFactor");
-            }
             dltName = dltName == null || dltName.isBlank() ? name + ".dlt" : dltName.trim();
         }
 

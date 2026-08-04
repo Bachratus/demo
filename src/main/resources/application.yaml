@@ -53,8 +53,6 @@ spring:
 #        shutdown-timeout: 100ms
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka1:9092,kafka2:9092,kafka3:9092}
-    topic-management:
-      enabled: ${DEMO_KAFKA_TOPIC_MANAGEMENT_ENABLED:false}
     producer:
       acks: ${DEMO_KAFKA_PRODUCER_ACKS:all}
       retries: ${DEMO_KAFKA_PRODUCER_RETRIES:10}
@@ -110,7 +108,4 @@ app:
       customer-account-created:
         name: ${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED:demo.customer-account-created.v1}
         concurrency: ${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED_CONCURRENCY:3}
-        partitions: ${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED_PARTITIONS:3}
-        replication-factor: ${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED_REPLICATION_FACTOR:3}
-        min-in-sync-replicas: ${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED_MIN_ISR:2}
         dlt-name: ${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED_DLT:demo.customer-account-created.v1.dlt}
