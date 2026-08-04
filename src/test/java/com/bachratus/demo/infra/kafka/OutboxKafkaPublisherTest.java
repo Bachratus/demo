@@ -5,6 +5,7 @@ import com.bachratus.demo.application.events.OutboxEventDraft;
 import com.bachratus.demo.infra.db.outbox.OutboxEventJpa;
 import com.bachratus.demo.infra.db.outbox.OutboxEventJpaRepository;
 import com.bachratus.demo.infra.db.outbox.OutboxStatus;
+import com.bachratus.demo.infra.kafka.config.AppKafkaProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.jupiter.api.BeforeEach;

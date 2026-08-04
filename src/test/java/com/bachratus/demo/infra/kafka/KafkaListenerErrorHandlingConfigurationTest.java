@@ -1,5 +1,6 @@
 package com.bachratus.demo.infra.kafka;
 
+import com.bachratus.demo.infra.kafka.config.AppKafkaProperties;
 import org.junit.jupiter.api.Test;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.listener.DefaultErrorHandler;

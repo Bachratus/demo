@@ -1,5 +1,6 @@
 package com.bachratus.demo.infra.kafka;
 
+import com.bachratus.demo.infra.kafka.config.AppKafkaProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.kafka.ConcurrentKafkaListenerContainerFactoryConfigurer;
 import org.springframework.context.annotation.Bean;

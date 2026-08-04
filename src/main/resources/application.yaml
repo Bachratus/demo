@@ -53,6 +53,8 @@ spring:
 #        shutdown-timeout: 100ms
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka1:9092,kafka2:9092,kafka3:9092}
+    topic-management:
+      enabled: ${DEMO_KAFKA_TOPIC_MANAGEMENT_ENABLED:false}
     producer:
       acks: ${DEMO_KAFKA_PRODUCER_ACKS:all}
       retries: ${DEMO_KAFKA_PRODUCER_RETRIES:10}

@@ -1,5 +1,6 @@
 package com.bachratus.demo.infra.kafka;
 
+import com.bachratus.demo.infra.kafka.config.AppKafkaProperties;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;

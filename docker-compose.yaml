@@ -1,0 +1,258 @@
+networks:
+  bachratus_net:
+    name: bachratus_net
+    driver: bridge
+
+volumes:
+#  auth-db-data:
+  keycloak-db-data:
+  demo-db-data:
+#  store-db-data:
+  kafka1-data:
+  kafka2-data:
+  kafka3-data:
+
+services:
+
+  # ---------------------------------------- SHARED ------------------------------------------
+
+  kafka1:
+    image: confluentinc/cp-kafka:7.8.0
+    hostname: kafka1
+    container_name: kafka1
+#    ports:
+#      - "9092:9092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_BROKER_ID: 1
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1:9093,2@kafka2:9093,3@kafka3:9093'
+      KAFKA_LISTENERS: 'PLAINTEXT://kafka1:9092,CONTROLLER://kafka1:9093'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka1:9092'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      CLUSTER_ID: 'EmptNWtoR4GGWx-BH6nGLQ'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_MIN_INSYNC_REPLICAS: 2
+    volumes:
+      - kafka1-data:/var/lib/kafka/data
+    networks:
+      - bachratus_net
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z kafka1 9092 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  kafka2:
+    image: confluentinc/cp-kafka:7.8.0
+    hostname: kafka2
+    container_name: kafka2
+#    ports:
+#      - "9094:9092"
+    environment:
+      KAFKA_NODE_ID: 2
+      KAFKA_BROKER_ID: 2
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1:9093,2@kafka2:9093,3@kafka3:9093'
+      KAFKA_LISTENERS: 'PLAINTEXT://kafka2:9092,CONTROLLER://kafka2:9093'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka2:9092'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      CLUSTER_ID: 'EmptNWtoR4GGWx-BH6nGLQ'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_MIN_INSYNC_REPLICAS: 2
+    volumes:
+      - kafka2-data:/var/lib/kafka/data
+    networks:
+      - bachratus_net
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z kafka2 9092 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  kafka3:
+    image: confluentinc/cp-kafka:7.8.0
+    hostname: kafka3
+    container_name: kafka3
+#    ports:
+#      - "9096:9092"
+    environment:
+      KAFKA_NODE_ID: 3
+      KAFKA_BROKER_ID: 3
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1:9093,2@kafka2:9093,3@kafka3:9093'
+      KAFKA_LISTENERS: 'PLAINTEXT://kafka3:9092,CONTROLLER://kafka3:9093'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka3:9092'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      CLUSTER_ID: 'EmptNWtoR4GGWx-BH6nGLQ'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_MIN_INSYNC_REPLICAS: 2
+    volumes:
+      - kafka3-data:/var/lib/kafka/data
+    networks:
+      - bachratus_net
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z kafka3 9092 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-cluster-ui
+    ports:
+      - "8035:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka1:9092,kafka2:9092,kafka3:9092
+    depends_on:
+      - kafka1
+      - kafka2
+      - kafka3
+    networks:
+      - bachratus_net
+
+  redis:
+    networks:
+      - bachratus_net
+    image: redis:7
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  redis-insight:
+    image: redislabs/redisinsight
+    depends_on:
+      redis:
+        condition: service_healthy
+    ports:
+      - "5540:5540"
+    networks:
+      - bachratus_net
+    restart: unless-stopped
+
+  # ---------------------------------------- KEYCLOAK ------------------------------------------
+
+  keycloak-db:
+    image: postgres:18
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_KEYCLOAK_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_KEYCLOAK_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_KEYCLOAK_DB}
+    ports:
+      - "35432:5432"
+    networks:
+      - bachratus_net
+    volumes:
+      - keycloak-db-data:/var/lib/postgresql
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_KEYCLOAK_USER} -d ${POSTGRES_KEYCLOAK_DB} || exit 1" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.6.1
+    restart: unless-stopped
+    command:
+      - start-dev
+      - --features=quick-theme
+    ports:
+      - "8080:8080"
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
+    networks:
+      - bachratus_net
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/${POSTGRES_KEYCLOAK_DB}
+      KC_DB_USERNAME: ${POSTGRES_KEYCLOAK_USER}
+      KC_DB_PASSWORD: ${POSTGRES_KEYCLOAK_PASSWORD}
+      KC_HEALTH_ENABLED: true
+      KC_METRICS_ENABLED: true
+
+  # ---------------------------------------- NOTIFICATION SERVICE ------------------------------------------
+
+  mailhog:
+    image: mailhog/mailhog
+    restart: unless-stopped
+    ports:
+      - "8025:8025"   # Panel webowy MailHog
+      - "1025:1025"   # SMTP
+    networks:
+      - bachratus_net
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "localhost", "1025" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+#     ---------------------------------------- DEMO -----------------------------------------
+  demo-db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_DEMO_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_DEMO_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DEMO_DB}
+    ports:
+      - "45432:5432"
+    networks:
+      - bachratus_net
+    volumes:
+      - demo-db-data:/var/lib/postgresql
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_DEMO_USER} -d ${POSTGRES_DEMO_DB} || exit 1" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+  demo-app:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+      - "5003:5002"
+    depends_on:
+      demo-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka1:
+        condition: service_healthy
+      kafka2:
+        condition: service_healthy
+      kafka3:
+        condition: service_healthy
+    networks:
+      - bachratus_net
+    environment:
+      JAVA_OPTS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5002"
+    healthcheck:
+      test: [ "CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -q '\"status\":\"UP\"' || exit 1" ]
+      interval: 10s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
