@@ -90,25 +90,32 @@ logging:
 
 app:
   kafka:
-    enabled: ${DEMO_KAFKA_ENABLED:true}
+    enabled: ${DEMO_KAFKA_ENABLED:true} # Główny kill switch dla integracji z Kafką
     producer:
-      delivery-timeout-ms: ${DEMO_KAFKA_PRODUCER_DELIVERY_TIMEOUT_MS:45000}
-      request-timeout-ms: ${DEMO_KAFKA_PRODUCER_REQUEST_TIMEOUT_MS:15000}
-      linger-ms: ${DEMO_KAFKA_PRODUCER_LINGER_MS:5}
-      send-result-timeout-ms: ${DEMO_KAFKA_PRODUCER_SEND_RESULT_TIMEOUT_MS:50000}
+      # delivery-timeout-ms, request-timeout-ms i linger-ms w app.kafka.producer są obecnie lustrzanym odbiciem spring.kafka.producer.properties.
+      # Realnie klienta konfiguruje spring.kafka.*; app.kafka jest używane w naszej klasie AppKafkaProperties do walidacji spójności
+      # send-result-timeout-ms jest już czysto aplikacyjną wartością
+      delivery-timeout-ms: ${DEMO_KAFKA_PRODUCER_DELIVERY_TIMEOUT_MS:45000} # Całkowity deadline producenta Kafki na dostarczenie rekordu
+      request-timeout-ms: ${DEMO_KAFKA_PRODUCER_REQUEST_TIMEOUT_MS:15000} # Timeout pojedynczego request do brokera. Musi być mniejszy niż delivery-timeout-ms
+      linger-ms: ${DEMO_KAFKA_PRODUCER_LINGER_MS:5} # Mówi producentowi, ile może chwilę poczekać przed wysłaniem batcha
+      send-result-timeout-ms: ${DEMO_KAFKA_PRODUCER_SEND_RESULT_TIMEOUT_MS:50000} # to timeout aplikacyjny używany przez nasz OutboxKafkaPublisher przy send
     listener:
-      retry-interval-ms: ${DEMO_KAFKA_LISTENER_RETRY_INTERVAL_MS:1000}
-      max-attempts: ${DEMO_KAFKA_LISTENER_MAX_ATTEMPTS:3}
+      retry-interval-ms: ${DEMO_KAFKA_LISTENER_RETRY_INTERVAL_MS:1000} # Przerwa między kolejnymi próbami obsługi wiadomości po błędzie
+      max-attempts: ${DEMO_KAFKA_LISTENER_MAX_ATTEMPTS:3} # Łączna liczba prób. Dla max-attempts = 3: pierwsza próba, retry, retry, DLT
+      # Po wyczerpaniu prób Springowy DefaultErrorHandler używa DeadLetterPublishingRecoverer, a ten pyta KafkaDeadLetterTopicResolver, na jaki DLT topic wysłać wiadomość.
     outbox:
-      enabled: ${DEMO_KAFKA_OUTBOX_ENABLED:true}
-      batch-size: ${DEMO_KAFKA_OUTBOX_BATCH_SIZE:100}
-      poll-delay-ms: ${DEMO_KAFKA_OUTBOX_POLL_DELAY_MS:500}
-      retry-backoff-ms: ${DEMO_KAFKA_OUTBOX_RETRY_BACKOFF_MS:10000}
-      max-attempts: ${DEMO_KAFKA_OUTBOX_MAX_ATTEMPTS:5}
+      # To jest konfiguracja naszego publishera outboxa, czyli mechanizmu, który czyta rekordy z tabeli outbox_event i publikuje je do Kafki.
+      enabled: ${DEMO_KAFKA_OUTBOX_ENABLED:true} # Wyłącza tylko publikowanie z outboxa do Kafki. To nie musi wyłączać całej Kafki.
+      batch-size: ${DEMO_KAFKA_OUTBOX_BATCH_SIZE:100} # Maksymalna liczba rekordów outboxa pobieranych w jednym przebiegu publishera. Jest używane w query z LIMIT :batchSize
+      poll-delay-ms: ${DEMO_KAFKA_OUTBOX_POLL_DELAY_MS:500} # Delay schedulera. Publisher odpala batch, kończy robotę, czeka 500ms, potem odpala następny. To jest fixedDelay, czyli liczone po zakończeniu poprzedniego wykonania, nie od jego startu.
+      retry-backoff-ms: ${DEMO_KAFKA_OUTBOX_RETRY_BACKOFF_MS:10000} # Czas do kolejnej próby po błędzie. Gdy publish się wywali, encja ustawia: nextAttemptAt = now.plusMillis(retryBackoffMs)
+      max-attempts: ${DEMO_KAFKA_OUTBOX_MAX_ATTEMPTS:5} # Maksymalna liczba prób publikacji na główny topic. Po osiągnięciu limitu event przechodzi w status DLT_PENDING i publisher próbuje wysłać go na DLT
     topics:
+      # Mapa konfiguracji eventów/topiców. Kluczem jest logiczny event key
+      # Ten key odpowiada temu, co event aplikacyjny zwraca z eventKey()
       customer-account-created:
-        name: ${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED:store.customer-account-created.v1}
-        concurrency: ${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED_CONCURRENCY:3}
-        dlt-name: ${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED_DLT:store.customer-account-created.v1.dlt}
-        event-type: ${DEMO_KAFKA_EVENT_CUSTOMER_ACCOUNT_CREATED_TYPE:customer.account-created}
-        aggregate-type: ${DEMO_KAFKA_EVENT_CUSTOMER_ACCOUNT_CREATED_AGGREGATE_TYPE:customer}
+        name: ${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED:store.customer-account-created.v1} # Fizyczna nazwa topicu w Kafce
+        concurrency: ${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED_CONCURRENCY:3} # Liczba równoległych wątków/consumerów dla listenera
+        dlt-name: ${DEMO_KAFKA_TOPIC_CUSTOMER_ACCOUNT_CREATED_DLT:store.customer-account-created.v1.dlt} # Fizyczna nazwa dead-letter topicu
+        event-type: ${DEMO_KAFKA_EVENT_CUSTOMER_ACCOUNT_CREATED_TYPE:customer.account-created}  # Semantyczny typ eventu, ale bez wersji. Finalnie w outboxie i headerze Kafka dostaniemy customer.account-created.v1 (przy schema version 1)
+        aggregate-type: ${DEMO_KAFKA_EVENT_CUSTOMER_ACCOUNT_CREATED_AGGREGATE_TYPE:customer} # Typ agregatu, którego dotyczy event. Publisher wrzuca to m.in. w header: aggregate-type: customer

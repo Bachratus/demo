@@ -21,36 +21,27 @@ public record AppKafkaProperties(
         listener = listener == null ? Listener.defaults() : listener;
         outbox = outbox == null ? Outbox.defaults() : outbox;
         topics = topics == null ? Map.of() : Map.copyOf(new LinkedHashMap<>(topics));
-
-        if (producer.sendResultTimeoutMs() <= producer.deliveryTimeoutMs()) {
-            throw new IllegalArgumentException(
-                    "Kafka producer sendResultTimeoutMs must be greater than deliveryTimeoutMs"
-            );
-        }
     }
 
     public Topic topic(String key) {
         Topic topic = topics.get(key);
-        if (topic == null)
+        if (topic == null) {
             throw new IllegalArgumentException("Missing Kafka topic configuration for key: " + key);
+        }
         return topic;
     }
 
-    public String topicName(String key) {
-        return topic(key).name();
-    }
-
     public String deadLetterTopicName(String key, String topicName) {
+        String normalizedTopicName = requireText(topicName, "topicName");
         Topic topic = topics.get(key);
         if (topic == null) {
-            return topicName + ".dlt";
+            return normalizedTopicName + ".dlt";
         }
         return topic.dltName();
     }
 
     public String deadLetterTopicNameForTopic(String topicName) {
         String normalizedTopicName = requireText(topicName, "topicName");
-
         return topics.values()
                 .stream()
                 .filter(topic -> topic.name().equals(normalizedTopicName))
@@ -73,6 +64,9 @@ public record AppKafkaProperties(
             if (sendResultTimeoutMs < 1) throw new IllegalArgumentException("Kafka producer sendResultTimeoutMs must be positive");
             if (requestTimeoutMs >= deliveryTimeoutMs) {
                 throw new IllegalArgumentException("Kafka producer requestTimeoutMs must be lower than deliveryTimeoutMs");
+            }
+            if (sendResultTimeoutMs <= deliveryTimeoutMs) {
+                throw new IllegalArgumentException("Kafka producer sendResultTimeoutMs must be greater than deliveryTimeoutMs");
             }
         }
 
@@ -135,10 +129,6 @@ public record AppKafkaProperties(
         public String eventType(int schemaVersion) {
             if (schemaVersion < 1) throw new IllegalArgumentException("Kafka event schemaVersion must be positive");
             return eventType + ".v" + schemaVersion;
-        }
-
-        private static String requireText(String value, String fieldName) {
-            return AppKafkaProperties.requireText(value, fieldName);
         }
     }
 

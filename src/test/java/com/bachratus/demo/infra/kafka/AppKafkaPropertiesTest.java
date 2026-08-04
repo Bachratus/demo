@@ -46,7 +46,7 @@ class AppKafkaPropertiesTest {
             AppKafkaProperties properties = properties();
 
             // when & then
-            assertThat(properties.topicName("customer-account-created"))
+            assertThat(properties.topic("customer-account-created").name())
                     .isEqualTo("store.customer-account-created.v1");
             assertThat(properties.deadLetterTopicName("customer-account-created", "ignored"))
                     .isEqualTo("store.customer-account-created.v1.dlt");

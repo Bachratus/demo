@@ -24,7 +24,7 @@ public class OutboxEventStoreAdapter implements OutboxEventStore {
     public void append(OutboxEventDraft event) {
         Objects.requireNonNull(event, "event cannot be null");
 
-        String topicName = kafkaProperties.topicName(event.topicKey());
+        String topicName = kafkaProperties.topic(event.topicKey()).name();
         Instant now = Instant.now(clock);
 
         repository.save(OutboxEventJpa.from(event, topicName, now));
