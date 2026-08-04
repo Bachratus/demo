@@ -1,4 +1,4 @@
-package com.bachratus.demo.infra.kafka.config;
+package com.bachratus.demo.infra.kafka;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

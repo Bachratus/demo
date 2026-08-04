@@ -2,7 +2,6 @@ package com.bachratus.demo.infra.kafka;
 
 import com.bachratus.demo.application.events.CustomerAccountCreatedEvent;
 import com.bachratus.demo.config.BaseFullIntegrationTest;
-import com.bachratus.demo.infra.kafka.config.AppKafkaProperties;
 import org.apache.kafka.clients.admin.TopicDescription;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

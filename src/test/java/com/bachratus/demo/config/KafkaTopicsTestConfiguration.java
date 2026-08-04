@@ -1,7 +1,7 @@
 package com.bachratus.demo.config;
 
 import com.bachratus.demo.application.events.CustomerAccountCreatedEvent;
-import com.bachratus.demo.infra.kafka.config.AppKafkaProperties;
+import com.bachratus.demo.infra.kafka.AppKafkaProperties;
 import org.apache.kafka.common.config.TopicConfig;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.TestConfiguration;

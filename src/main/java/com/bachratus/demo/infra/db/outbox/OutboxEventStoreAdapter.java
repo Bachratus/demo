@@ -2,7 +2,7 @@ package com.bachratus.demo.infra.db.outbox;
 
 import com.bachratus.demo.application.events.OutboxEventDraft;
 import com.bachratus.demo.application.ports.out.OutboxEventStore;
-import com.bachratus.demo.infra.kafka.config.AppKafkaProperties;
+import com.bachratus.demo.infra.kafka.AppKafkaProperties;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;

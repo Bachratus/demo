@@ -1,6 +1,5 @@
 package com.bachratus.demo.infra.kafka;
 
-import com.bachratus.demo.infra.kafka.config.AppKafkaProperties;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

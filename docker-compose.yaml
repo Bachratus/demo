@@ -190,9 +190,9 @@ services:
     image: postgres:18
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_KEYCLOAK_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_KEYCLOAK_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_KEYCLOAK_DB}
+      POSTGRES_USER: keycloak_user
+      POSTGRES_PASSWORD: keycloak_pwd
+      POSTGRES_DB: keycloak
     ports:
       - "35432:5432"
     networks:
@@ -200,7 +200,7 @@ services:
     volumes:
       - keycloak-db-data:/var/lib/postgresql
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_KEYCLOAK_USER} -d ${POSTGRES_KEYCLOAK_DB} || exit 1" ]
+      test: [ "CMD-SHELL", "pg_isready -U keycloak_user -d keycloak_pwd || exit 1" ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -219,40 +219,23 @@ services:
     networks:
       - bachratus_net
     environment:
-      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME}
-      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
       KC_DB: postgres
-      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/${POSTGRES_KEYCLOAK_DB}
-      KC_DB_USERNAME: ${POSTGRES_KEYCLOAK_USER}
-      KC_DB_PASSWORD: ${POSTGRES_KEYCLOAK_PASSWORD}
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
+      KC_DB_USERNAME: keycloak_user
+      KC_DB_PASSWORD: keycloak_pwd
       KC_HEALTH_ENABLED: true
       KC_METRICS_ENABLED: true
-
-  # ---------------------------------------- NOTIFICATION SERVICE ------------------------------------------
-
-  mailhog:
-    image: mailhog/mailhog
-    restart: unless-stopped
-    ports:
-      - "8025:8025"   # Panel webowy MailHog
-      - "1025:1025"   # SMTP
-    networks:
-      - bachratus_net
-    healthcheck:
-      test: [ "CMD", "nc", "-z", "localhost", "1025" ]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 5s
 
 #     ---------------------------------------- DEMO -----------------------------------------
   demo-db:
     image: postgres:17
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_DEMO_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_DEMO_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DEMO_DB}
+      POSTGRES_USER: demo_user
+      POSTGRES_PASSWORD: demo_password
+      POSTGRES_DB: demo
     ports:
       - "${POSTGRES_DEMO_EXTERNAL_PORT:-45432}:5432"
     networks:
@@ -260,7 +243,7 @@ services:
     volumes:
       - demo-db-data:/var/lib/postgresql
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_DEMO_USER} -d ${POSTGRES_DEMO_DB} || exit 1" ]
+      test: [ "CMD-SHELL", "pg_isready -U demo_user -d demo || exit 1" ]
       interval: 5s
       timeout: 5s
       retries: 10
