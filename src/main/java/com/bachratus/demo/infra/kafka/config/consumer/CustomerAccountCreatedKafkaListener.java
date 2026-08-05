@@ -1,4 +1,4 @@
-package com.bachratus.demo.infra.kafka.config;
+package com.bachratus.demo.infra.kafka.config.consumer;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;

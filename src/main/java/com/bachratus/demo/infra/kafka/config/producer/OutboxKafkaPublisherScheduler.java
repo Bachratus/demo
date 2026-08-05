@@ -1,4 +1,4 @@
-package com.bachratus.demo.infra.kafka.config;
+package com.bachratus.demo.infra.kafka.config.producer;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

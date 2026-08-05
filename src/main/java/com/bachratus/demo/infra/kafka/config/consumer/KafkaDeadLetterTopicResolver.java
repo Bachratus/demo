@@ -1,5 +1,6 @@
-package com.bachratus.demo.infra.kafka.config;
+package com.bachratus.demo.infra.kafka.config.consumer;
 
+import com.bachratus.demo.infra.kafka.config.AppKafkaProperties;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.TopicPartition;

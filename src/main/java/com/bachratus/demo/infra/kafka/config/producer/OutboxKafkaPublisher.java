@@ -1,8 +1,9 @@
-package com.bachratus.demo.infra.kafka.config;
+package com.bachratus.demo.infra.kafka.config.producer;
 
 import com.bachratus.demo.infra.db.outbox.OutboxEventJpa;
 import com.bachratus.demo.infra.db.outbox.OutboxEventJpaRepository;
 import com.bachratus.demo.infra.db.outbox.OutboxStatus;
+import com.bachratus.demo.infra.kafka.config.AppKafkaProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerRecord;

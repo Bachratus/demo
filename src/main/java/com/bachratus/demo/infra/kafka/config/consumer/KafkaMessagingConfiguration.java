@@ -1,4 +1,4 @@
-package com.bachratus.demo.infra.kafka.config;
+package com.bachratus.demo.infra.kafka.config.consumer;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
