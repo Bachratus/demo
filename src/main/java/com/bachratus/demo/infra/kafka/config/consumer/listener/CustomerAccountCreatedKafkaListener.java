@@ -20,6 +20,7 @@ public class CustomerAccountCreatedKafkaListener {
 
     @KafkaListener(
             id = "customer-account-created-console-logger",
+            info = "customer-account-created-console-logger",
             groupId = "${spring.kafka.consumer.group-id}",
             topics = "${app.kafka.topics.customer-account-created.name}",
             concurrency = "${app.kafka.topics.customer-account-created.concurrency}"

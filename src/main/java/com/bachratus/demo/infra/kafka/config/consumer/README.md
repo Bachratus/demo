@@ -54,6 +54,7 @@ The listener uses:
 ```java
 @KafkaListener(
     id = "customer-account-created-console-logger",
+    info = "customer-account-created-console-logger",
     groupId = "${spring.kafka.consumer.group-id}",
     topics = "${app.kafka.topics.customer-account-created.name}",
     concurrency = "${app.kafka.topics.customer-account-created.concurrency}"
@@ -138,6 +139,9 @@ Some exception types are treated by Spring Kafka as fatal by default. A
 usually cannot make an invalid payload valid, so normal listener retries are
 skipped and recovery is attempted immediately.
 
+The dead-letter recoverer is configured to wait for the DLT send result. If DLT
+publication fails or times out, the record is not treated as recovered.
+
 ## 6. Dead-letter topic routing
 
 `KafkaDeadLetterTopicResolver` decides where failed records should be published
@@ -175,6 +179,37 @@ store.customer-account-created.v1.dlt
 ```
 
 on the same partition.
+
+Spring Kafka adds its own DLT headers with original record coordinates and
+exception details. On top of that, `KafkaDeadLetterHeadersFactory` adds
+application-level diagnostic headers intended for a future DLT monitor/resolver:
+
+- `dlt-source`
+- `dlt-application`
+- `dlt-consumer-group`
+- `dlt-listener-id`
+- `dlt-original-topic`
+- `dlt-original-partition`
+- `dlt-original-offset`
+- `dlt-original-timestamp`
+- `dlt-failed-at`
+- `dlt-error-class`
+- `dlt-error-message`
+- `dlt-root-cause-class`
+- `dlt-root-cause-message`
+- `dlt-event-id`
+- `dlt-event-type`
+- `dlt-aggregate-type`
+- `dlt-aggregate-id`
+
+The original event headers are still preserved on the DLT record. The `dlt-*`
+copies make the most important fields easy to index and query without depending
+on framework-specific header names.
+
+`LoggingDeadLetterPublishingRecoverer` logs each DLT publication attempt, a
+successful DLT publication, and a failed DLT publication. The log entries include
+source topic, source partition, source offset, DLT topic, DLT partition,
+consumer group, event id, event type, and exception details.
 
 ## 7. Scenario: successful record processing
 
@@ -251,17 +286,22 @@ on the same partition.
 1. The listener has failed all configured processing attempts.
 2. `DeadLetterPublishingRecoverer` asks `KafkaDeadLetterTopicResolver` for the
    target topic and partition.
-3. The record is published to the dead-letter topic.
-4. Spring Kafka treats the original record as recovered.
-5. The consumer can continue with later records from the partition.
+3. Diagnostic `dlt-*` headers are added to the record.
+4. `LoggingDeadLetterPublishingRecoverer` logs the DLT publication attempt.
+5. The record is published to the dead-letter topic.
+6. DLT send confirmation is received before the configured timeout.
+7. `LoggingDeadLetterPublishingRecoverer` logs successful DLT publication.
+8. Spring Kafka treats the original record as recovered.
+9. The consumer can continue with later records from the partition.
 
 ## 14. Scenario: dead-letter publication fails
 
 1. The listener has failed all configured processing attempts.
 2. Spring Kafka tries to publish the record to the dead-letter topic.
 3. The DLT publish fails, for example because Kafka is unavailable.
-4. The record is not safely recovered.
-5. Depending on container state and broker availability, the partition can keep
+4. `LoggingDeadLetterPublishingRecoverer` logs the failed DLT publication.
+5. The record is not safely recovered.
+6. Depending on container state and broker availability, the partition can keep
    retrying or become blocked on the problematic record.
 
 This scenario should be monitored carefully. A failing DLT path means the system

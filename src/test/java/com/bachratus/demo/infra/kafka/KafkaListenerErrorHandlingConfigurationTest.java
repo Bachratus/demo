@@ -1,12 +1,14 @@
 package com.bachratus.demo.infra.kafka;
 
 import com.bachratus.demo.infra.kafka.config.consumer.KafkaDeadLetterTopicResolver;
+import com.bachratus.demo.infra.kafka.config.consumer.KafkaDeadLetterHeadersFactory;
 import com.bachratus.demo.infra.kafka.config.consumer.KafkaListenerErrorHandlingConfiguration;
 import com.bachratus.demo.infra.kafka.config.AppKafkaProperties;
 import org.junit.jupiter.api.Test;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 
+import java.time.Clock;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,7 +42,8 @@ class KafkaListenerErrorHandlingConfigurationTest {
         // when
         DefaultErrorHandler errorHandler = configuration.kafkaDefaultErrorHandler(
                 mock(KafkaTemplate.class),
-                new KafkaDeadLetterTopicResolver(properties)
+                new KafkaDeadLetterTopicResolver(properties),
+                new KafkaDeadLetterHeadersFactory("demo", "demo-app", Clock.systemUTC())
         );
 
         // then

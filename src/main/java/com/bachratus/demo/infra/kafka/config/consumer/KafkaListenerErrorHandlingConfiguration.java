@@ -9,9 +9,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.util.backoff.FixedBackOff;
+
+import java.time.Duration;
 
 /**
  * Configures Kafka listener retry handling and dead-letter publishing for consumer failures.
@@ -26,12 +27,20 @@ public class KafkaListenerErrorHandlingConfiguration {
     @Bean
     public DefaultErrorHandler kafkaDefaultErrorHandler(
             KafkaTemplate<String, Object> kafkaTemplate,
-            KafkaDeadLetterTopicResolver deadLetterTopicResolver
+            KafkaDeadLetterTopicResolver deadLetterTopicResolver,
+            KafkaDeadLetterHeadersFactory deadLetterHeadersFactory
     ) {
-        DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(
+        LoggingDeadLetterPublishingRecoverer recoverer = new LoggingDeadLetterPublishingRecoverer(
                 kafkaTemplate,
-                deadLetterTopicResolver::resolve
+                deadLetterTopicResolver
         );
+        recoverer.addHeadersFunction(deadLetterHeadersFactory::create);
+        recoverer.setFailIfSendResultIsError(true);
+        recoverer.setWaitForSendResultTimeout(Duration.ofMillis(
+                kafkaProperties.producer().sendResultTimeoutMs()
+        ));
+        recoverer.setLogRecoveryRecord(true);
+        recoverer.setThrowIfNoDestinationReturned(true);
 
         long retries = Math.max(0, kafkaProperties.listener().maxAttempts() - 1L);
 
