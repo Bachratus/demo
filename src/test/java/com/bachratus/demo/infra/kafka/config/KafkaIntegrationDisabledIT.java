@@ -1,4 +1,4 @@
-package com.bachratus.demo.infra.kafka;
+package com.bachratus.demo.infra.kafka.config;
 
 import com.bachratus.demo.application.ports.in.CreateCustomerAccountUseCase;
 import com.bachratus.demo.application.request.CreateCustomerAccountRequest;
@@ -7,7 +7,7 @@ import com.bachratus.demo.domain.customer.Customer;
 import com.bachratus.demo.infra.db.outbox.OutboxEventJpa;
 import com.bachratus.demo.infra.db.outbox.OutboxEventJpaRepository;
 import com.bachratus.demo.infra.db.outbox.OutboxStatus;
-import com.bachratus.demo.infra.kafka.config.AppKafkaProperties;
+import com.bachratus.demo.infra.kafka.config.consumer.KafkaDeadLetterHeadersFactory;
 import com.bachratus.demo.infra.kafka.config.consumer.KafkaDeadLetterTopicResolver;
 import com.bachratus.demo.infra.kafka.config.consumer.listener.CustomerAccountCreatedKafkaListener;
 import com.bachratus.demo.infra.kafka.config.producer.OutboxKafkaPublisher;
@@ -46,6 +46,7 @@ class KafkaIntegrationDisabledIT extends BaseFullIntegrationTest {
         assertThat(applicationContext.getBeanNamesForType(KafkaContainer.class)).isEmpty();
         assertThat(applicationContext.getBeanNamesForType(KafkaAdmin.NewTopics.class)).isEmpty();
         assertThat(applicationContext.getBeanNamesForType(CustomerAccountCreatedKafkaListener.class)).isEmpty();
+        assertThat(applicationContext.getBeanNamesForType(KafkaDeadLetterHeadersFactory.class)).isEmpty();
         assertThat(applicationContext.getBeanNamesForType(KafkaDeadLetterTopicResolver.class)).isEmpty();
         assertThat(applicationContext.getBeanNamesForType(DefaultErrorHandler.class)).isEmpty();
         assertThat(applicationContext.getBeanNamesForType(OutboxKafkaPublisher.class)).isEmpty();

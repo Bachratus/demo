@@ -1,8 +1,7 @@
-package com.bachratus.demo.infra.kafka;
+package com.bachratus.demo.infra.kafka.config.consumer.idempotency;
 
 import com.bachratus.demo.infra.db.processed.ProcessedEventJpa;
 import com.bachratus.demo.infra.db.processed.ProcessedEventJpaRepository;
-import com.bachratus.demo.infra.kafka.config.consumer.idempotency.KafkaEventIdempotencyAspect;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.clients.consumer.ConsumerRecord;

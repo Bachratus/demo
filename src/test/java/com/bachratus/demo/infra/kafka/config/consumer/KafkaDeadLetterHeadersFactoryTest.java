@@ -1,6 +1,4 @@
-package com.bachratus.demo.infra.kafka;
-
-import com.bachratus.demo.infra.kafka.config.consumer.KafkaDeadLetterHeadersFactory;
+package com.bachratus.demo.infra.kafka.config.consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.header.Headers;
 import org.apache.kafka.common.header.internals.RecordHeaders;

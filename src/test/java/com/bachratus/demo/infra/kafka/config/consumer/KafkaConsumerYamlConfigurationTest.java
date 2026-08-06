@@ -1,4 +1,4 @@
-package com.bachratus.demo.infra.kafka;
+package com.bachratus.demo.infra.kafka.config.consumer;
 
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.junit.jupiter.api.Test;

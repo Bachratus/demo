@@ -1,7 +1,6 @@
-package com.bachratus.demo.infra.kafka;
+package com.bachratus.demo.infra.kafka.config.consumer.listener;
 
 import com.bachratus.demo.infra.kafka.config.consumer.handler.CustomerAccountCreatedKafkaEventHandler;
-import com.bachratus.demo.infra.kafka.config.consumer.listener.CustomerAccountCreatedKafkaListener;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.kafka.clients.consumer.ConsumerRecord;

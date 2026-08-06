@@ -1,8 +1,5 @@
-package com.bachratus.demo.infra.kafka;
+package com.bachratus.demo.infra.kafka.config.consumer;
 
-import com.bachratus.demo.infra.kafka.config.consumer.KafkaDeadLetterTopicResolver;
-import com.bachratus.demo.infra.kafka.config.consumer.KafkaDeadLetterHeadersFactory;
-import com.bachratus.demo.infra.kafka.config.consumer.KafkaListenerErrorHandlingConfiguration;
 import com.bachratus.demo.infra.kafka.config.AppKafkaProperties;
 import org.junit.jupiter.api.Test;
 import org.springframework.kafka.core.KafkaTemplate;

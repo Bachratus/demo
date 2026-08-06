@@ -1,6 +1,5 @@
-package com.bachratus.demo.infra.kafka;
+package com.bachratus.demo.infra.kafka.config.consumer;
 
-import com.bachratus.demo.infra.kafka.config.consumer.KafkaDeadLetterTopicResolver;
 import com.bachratus.demo.infra.kafka.config.AppKafkaProperties;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.TopicPartition;

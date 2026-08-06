@@ -1,8 +1,7 @@
-package com.bachratus.demo.infra.kafka;
+package com.bachratus.demo.infra.kafka.event;
 
 import com.bachratus.demo.application.events.CustomerAccountCreatedEvent;
 import com.bachratus.demo.application.events.OutboxEventDraft;
-import com.bachratus.demo.infra.kafka.event.KafkaOutboxEventDraftFactory;
 import com.bachratus.demo.infra.kafka.config.AppKafkaProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
