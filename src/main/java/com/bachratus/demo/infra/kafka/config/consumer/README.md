@@ -131,6 +131,11 @@ Spring Kafka performs one initial attempt and two retries, waiting 1000 ms
 between retry attempts. After the attempts are exhausted, the record is handed to
 the configured `DeadLetterPublishingRecoverer`.
 
+Some exception types are treated by Spring Kafka as fatal by default. A
+`DeserializationException` is one of them. Retrying the same raw record bytes
+usually cannot make an invalid payload valid, so normal listener retries are
+skipped and recovery is attempted immediately.
+
 ## 6. Dead-letter topic routing
 
 `KafkaDeadLetterTopicResolver` decides where failed records should be published
@@ -142,6 +147,11 @@ record topic:
 ```java
 kafkaProperties.deadLetterTopicNameForTopic(record.topic())
 ```
+
+DLT names must be explicitly configured in `AppKafkaProperties`. The resolver
+does not fall back to a conventional `<topic>.dlt` name. If a consumed topic is
+not present in `app.kafka.topics.*`, or if its DLT name is missing, the
+configuration is treated as invalid.
 
 The failed record is routed to the same partition number in the dead-letter
 topic:
@@ -205,8 +215,11 @@ on the same partition.
 1. Kafka delivers a record to the consumer.
 2. The value cannot be deserialized by the delegate `JsonDeserializer`.
 3. `ErrorHandlingDeserializer` captures the deserialization failure.
-4. Spring Kafka routes the failure through listener error handling.
-5. After configured retries are exhausted, the record can be sent to the
+4. The listener method is not invoked with a normal `JsonNode` payload.
+5. Spring Kafka routes the failure through container error handling.
+6. `DefaultErrorHandler` treats `DeserializationException` as fatal by default.
+7. Normal listener retries are skipped.
+8. `DeadLetterPublishingRecoverer` attempts to publish the failed record to the
    configured dead-letter topic.
 
 ## 11. Scenario: missing idempotency headers
@@ -240,7 +253,22 @@ on the same partition.
 This scenario should be monitored carefully. A failing DLT path means the system
 cannot safely isolate poison messages.
 
-## 14. Current delivery guarantees
+## 14. Scenario: dead-letter topic is not configured
+
+1. The listener has failed all configured processing attempts, or a fatal
+   exception such as deserialization failure needs immediate recovery.
+2. `DeadLetterPublishingRecoverer` asks `KafkaDeadLetterTopicResolver` for the
+   target topic and partition.
+3. `KafkaDeadLetterTopicResolver` cannot find a matching topic entry in
+   `AppKafkaProperties`.
+4. DLT routing fails with a configuration error.
+5. The record is not safely recovered.
+
+This is intentional. A missing DLT mapping means the service does not know where
+poison messages for that topic should live. Failing fast is safer than silently
+publishing to a guessed topic name.
+
+## 15. Current delivery guarantees
 
 The current consumer setup should be treated as at-least-once processing.
 

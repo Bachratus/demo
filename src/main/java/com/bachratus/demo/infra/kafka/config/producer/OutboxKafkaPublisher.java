@@ -102,7 +102,7 @@ public class OutboxKafkaPublisher {
     }
 
     private void publishToDeadLetterTopic(OutboxEventJpa event, String sourceError) {
-        String dltTopicName = kafkaProperties.deadLetterTopicName(event.getTopicKey(), event.getTopicName());
+        String dltTopicName = kafkaProperties.deadLetterTopicName(event.getTopicKey());
 
         try {
             send(dltTopicName, event, Map.of(

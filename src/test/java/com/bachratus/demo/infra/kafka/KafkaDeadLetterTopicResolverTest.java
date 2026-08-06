@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class KafkaDeadLetterTopicResolverTest {
 
@@ -40,7 +41,7 @@ class KafkaDeadLetterTopicResolverTest {
         }
 
         @Test
-        void shouldFallbackToConventionalDltTopicWhenTopicIsUnknown() {
+        void shouldRejectDltResolutionWhenTopicIsUnknown() {
             // given
             ConsumerRecord<String, Object> record = new ConsumerRecord<>(
                     "external.topic",
@@ -50,12 +51,10 @@ class KafkaDeadLetterTopicResolverTest {
                     new Object()
             );
 
-            // when
-            TopicPartition result = resolver.resolve(record, new RuntimeException("boom"));
-
-            // then
-            assertThat(result.topic()).isEqualTo("external.topic.dlt");
-            assertThat(result.partition()).isEqualTo(1);
+            // when & then
+            assertThatThrownBy(() -> resolver.resolve(record, new RuntimeException("boom")))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("Missing Kafka topic configuration for topic: external.topic");
         }
     }
 

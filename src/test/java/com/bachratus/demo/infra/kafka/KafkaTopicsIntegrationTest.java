@@ -29,7 +29,7 @@ class KafkaTopicsIntegrationTest extends BaseFullIntegrationTest {
     @Test
     void shouldCreateKafkaTopicsBeforeTestsStart() {
         String topicName = kafkaProperties.topic(CUSTOMER_ACCOUNT_CREATED_EVENT_KEY).name();
-        String dltName = kafkaProperties.deadLetterTopicName(CUSTOMER_ACCOUNT_CREATED_EVENT_KEY, topicName);
+        String dltName = kafkaProperties.deadLetterTopicName(CUSTOMER_ACCOUNT_CREATED_EVENT_KEY);
 
         Map<String, TopicDescription> topics = kafkaAdmin.describeTopics(
                 topicName,

@@ -37,13 +37,8 @@ public record AppKafkaProperties(
         return topic;
     }
 
-    public String deadLetterTopicName(String key, String topicName) {
-        String normalizedTopicName = requireText(topicName, "topicName");
-        Topic topic = topics.get(key);
-        if (topic == null) {
-            return normalizedTopicName + ".dlt";
-        }
-        return topic.dltName();
+    public String deadLetterTopicName(String key) {
+        return topic(key).dltName();
     }
 
     public String deadLetterTopicNameForTopic(String topicName) {
@@ -53,7 +48,9 @@ public record AppKafkaProperties(
                 .filter(topic -> topic.name().equals(normalizedTopicName))
                 .map(Topic::dltName)
                 .findFirst()
-                .orElse(normalizedTopicName + ".dlt");
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Missing Kafka topic configuration for topic: " + normalizedTopicName
+                ));
     }
 
     /**
@@ -67,10 +64,18 @@ public record AppKafkaProperties(
     ) {
 
         public Producer {
-            if (deliveryTimeoutMs < 1) throw new IllegalArgumentException("Kafka producer deliveryTimeoutMs must be positive");
-            if (requestTimeoutMs < 1) throw new IllegalArgumentException("Kafka producer requestTimeoutMs must be positive");
-            if (lingerMs < 0) throw new IllegalArgumentException("Kafka producer lingerMs cannot be negative");
-            if (sendResultTimeoutMs < 1) throw new IllegalArgumentException("Kafka producer sendResultTimeoutMs must be positive");
+            if (deliveryTimeoutMs < 1) {
+                throw new IllegalArgumentException("Kafka producer deliveryTimeoutMs must be positive");
+            }
+            if (requestTimeoutMs < 1) {
+                throw new IllegalArgumentException("Kafka producer requestTimeoutMs must be positive");
+            }
+            if (lingerMs < 0) {
+                throw new IllegalArgumentException("Kafka producer lingerMs cannot be negative");
+            }
+            if (sendResultTimeoutMs < 1) {
+                throw new IllegalArgumentException("Kafka producer sendResultTimeoutMs must be positive");
+            }
             if (requestTimeoutMs >= deliveryTimeoutMs) {
                 throw new IllegalArgumentException("Kafka producer requestTimeoutMs must be lower than deliveryTimeoutMs");
             }
@@ -93,8 +98,12 @@ public record AppKafkaProperties(
     ) {
 
         public Listener {
-            if (retryIntervalMs < 0) throw new IllegalArgumentException("Kafka listener retryIntervalMs cannot be negative");
-            if (maxAttempts < 1) throw new IllegalArgumentException("Kafka listener maxAttempts must be positive");
+            if (retryIntervalMs < 0) {
+                throw new IllegalArgumentException("Kafka listener retryIntervalMs cannot be negative");
+            }
+            if (maxAttempts < 1) {
+                throw new IllegalArgumentException("Kafka listener maxAttempts must be positive");
+            }
         }
 
         private static Listener defaults() {
@@ -114,10 +123,18 @@ public record AppKafkaProperties(
     ) {
 
         public Outbox {
-            if (batchSize < 1) throw new IllegalArgumentException("Kafka outbox batchSize must be positive");
-            if (pollDelayMs < 1) throw new IllegalArgumentException("Kafka outbox pollDelayMs must be positive");
-            if (retryBackoffMs < 0) throw new IllegalArgumentException("Kafka outbox retryBackoffMs cannot be negative");
-            if (maxAttempts < 1) throw new IllegalArgumentException("Kafka outbox maxAttempts must be positive");
+            if (batchSize < 1) {
+                throw new IllegalArgumentException("Kafka outbox batchSize must be positive");
+            }
+            if (pollDelayMs < 1) {
+                throw new IllegalArgumentException("Kafka outbox pollDelayMs must be positive");
+            }
+            if (retryBackoffMs < 0) {
+                throw new IllegalArgumentException("Kafka outbox retryBackoffMs cannot be negative");
+            }
+            if (maxAttempts < 1) {
+                throw new IllegalArgumentException("Kafka outbox maxAttempts must be positive");
+            }
         }
 
         private static Outbox defaults() {
@@ -138,21 +155,30 @@ public record AppKafkaProperties(
 
         public Topic {
             name = requireText(name, "Kafka topic name");
-            if (concurrency < 1) throw new IllegalArgumentException("Kafka topic concurrency must be positive");
-            dltName = dltName == null || dltName.isBlank() ? name + ".dlt" : dltName.trim();
+            if (concurrency < 1) {
+                throw new IllegalArgumentException("Kafka topic concurrency must be positive");
+            }
+            dltName = requireText(dltName, "Kafka dead-letter topic name");
+            if (dltName.equals(name)) {
+                throw new IllegalArgumentException("Kafka dead-letter topic name must be different from topic name");
+            }
             eventType = requireText(eventType, "Kafka event type");
             aggregateType = requireText(aggregateType, "Kafka aggregate type");
         }
 
         public String eventType(int schemaVersion) {
-            if (schemaVersion < 1) throw new IllegalArgumentException("Kafka event schemaVersion must be positive");
+            if (schemaVersion < 1) {
+                throw new IllegalArgumentException("Kafka event schemaVersion must be positive");
+            }
             return eventType + ".v" + schemaVersion;
         }
     }
 
     private static String requireText(String value, String fieldName) {
         Objects.requireNonNull(value, fieldName + " cannot be null");
-        if (value.isBlank()) throw new IllegalArgumentException(fieldName + " cannot be blank");
-        return value.trim();
+        if (!value.isBlank()) {
+            return value.trim();
+        }
+        throw new IllegalArgumentException(fieldName + " cannot be blank");
     }
 }

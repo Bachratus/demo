@@ -48,7 +48,7 @@ class AppKafkaPropertiesTest {
             // when & then
             assertThat(properties.topic("customer-account-created").name())
                     .isEqualTo("store.customer-account-created.v1");
-            assertThat(properties.deadLetterTopicName("customer-account-created", "ignored"))
+            assertThat(properties.deadLetterTopicName("customer-account-created"))
                     .isEqualTo("store.customer-account-created.v1.dlt");
             assertThat(properties.deadLetterTopicNameForTopic("store.customer-account-created.v1"))
                     .isEqualTo("store.customer-account-created.v1.dlt");
@@ -59,13 +59,40 @@ class AppKafkaPropertiesTest {
         }
 
         @Test
-        void shouldFallbackToConventionalDltNameWhenTopicIsUnknown() {
+        void shouldRejectDltResolutionWhenTopicIsUnknown() {
             // given
             AppKafkaProperties properties = properties();
 
             // when & then
-            assertThat(properties.deadLetterTopicNameForTopic("external.topic"))
-                    .isEqualTo("external.topic.dlt");
+            assertThatThrownBy(() -> properties.deadLetterTopicNameForTopic("external.topic"))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("Missing Kafka topic configuration for topic: external.topic");
+        }
+
+        @Test
+        void shouldRejectTopicWithoutConfiguredDltName() {
+            // when & then
+            assertThatThrownBy(() -> new AppKafkaProperties.Topic(
+                    "store.customer-account-created.v1",
+                    3,
+                    null,
+                    "customer.account-created",
+                    "customer"
+            )).isInstanceOf(NullPointerException.class)
+                    .hasMessageContaining("Kafka dead-letter topic name");
+        }
+
+        @Test
+        void shouldRejectTopicWithDltNameEqualToMainTopicName() {
+            // when & then
+            assertThatThrownBy(() -> new AppKafkaProperties.Topic(
+                    "store.customer-account-created.v1",
+                    3,
+                    "store.customer-account-created.v1",
+                    "customer.account-created",
+                    "customer"
+            )).isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("must be different");
         }
     }
 

@@ -115,6 +115,10 @@ On failure, the event is marked for retry by incrementing `retryCount`, storing
 After `app.kafka.outbox.max-attempts` is reached, the event moves to
 `DLT_PENDING` and is published to the configured dead-letter topic.
 
+The dead-letter topic is resolved from `app.kafka.topics.<topic-key>.dlt-name`.
+It must be configured explicitly and must be different from the main topic name.
+The publisher does not fall back to a guessed `<topic>.dlt` name.
+
 ## 6. ProducerRecord shape
 
 The publisher creates records as:
