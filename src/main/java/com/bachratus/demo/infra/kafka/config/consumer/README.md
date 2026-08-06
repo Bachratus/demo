@@ -26,8 +26,9 @@ The current configuration uses:
 
 - `group-id=demo-app`
 - `auto-offset-reset=earliest`
-- `StringDeserializer` for record keys
+- `ErrorHandlingDeserializer` for record keys
 - `ErrorHandlingDeserializer` for record values
+- `StringDeserializer` as the key delegate
 - `JsonDeserializer` as the value delegate
 - `JsonNode` as the default payload type
 
@@ -35,8 +36,9 @@ The current configuration uses:
 offset for a partition yet. Once offsets exist, Kafka resumes from the committed
 offsets.
 
-`ErrorHandlingDeserializer` allows deserialization failures to flow through
-Spring Kafka error handling instead of breaking the consumer loop directly.
+`ErrorHandlingDeserializer` allows key and value deserialization failures to
+flow through Spring Kafka error handling instead of breaking the consumer loop
+directly.
 
 ## 3. CustomerAccountCreatedKafkaListener
 
@@ -177,8 +179,8 @@ on the same partition.
 ## 7. Scenario: successful record processing
 
 1. Kafka delivers a record to the listener.
-2. The key is deserialized as `String`.
-3. The value is deserialized as `JsonNode`.
+2. The key is deserialized by the `StringDeserializer` delegate.
+3. The value is deserialized by the `JsonDeserializer` delegate as `JsonNode`.
 4. `CustomerAccountCreatedKafkaListener` receives the `ConsumerRecord`.
 5. The listener delegates the record to `CustomerAccountCreatedKafkaEventHandler`.
 6. The idempotency aspect stores `(event-type, event-id)` in `processed_events`.
@@ -210,11 +212,23 @@ on the same partition.
 9. If all attempts fail, `DeadLetterPublishingRecoverer` publishes the record to
    the configured dead-letter topic.
 
-## 10. Scenario: deserialization fails
+## 10. Scenario: key deserialization fails
+
+1. Kafka delivers a record to the consumer.
+2. The key cannot be deserialized by the delegate `StringDeserializer`.
+3. `ErrorHandlingDeserializer` captures the key deserialization failure.
+4. The listener method is not invoked with a normal `ConsumerRecord`.
+5. Spring Kafka routes the failure through container error handling.
+6. `DefaultErrorHandler` treats `DeserializationException` as fatal by default.
+7. Normal listener retries are skipped.
+8. `DeadLetterPublishingRecoverer` attempts to publish the failed record to the
+   configured dead-letter topic.
+
+## 11. Scenario: value deserialization fails
 
 1. Kafka delivers a record to the consumer.
 2. The value cannot be deserialized by the delegate `JsonDeserializer`.
-3. `ErrorHandlingDeserializer` captures the deserialization failure.
+3. `ErrorHandlingDeserializer` captures the value deserialization failure.
 4. The listener method is not invoked with a normal `JsonNode` payload.
 5. Spring Kafka routes the failure through container error handling.
 6. `DefaultErrorHandler` treats `DeserializationException` as fatal by default.
@@ -222,7 +236,7 @@ on the same partition.
 8. `DeadLetterPublishingRecoverer` attempts to publish the failed record to the
    configured dead-letter topic.
 
-## 11. Scenario: missing idempotency headers
+## 12. Scenario: missing idempotency headers
 
 1. Kafka delivers a record to the listener.
 2. The listener delegates the record to an annotated handler.
@@ -232,7 +246,7 @@ on the same partition.
 6. After configured retries are exhausted, the record can be sent to the
    configured dead-letter topic.
 
-## 12. Scenario: dead-letter publication succeeds
+## 13. Scenario: dead-letter publication succeeds
 
 1. The listener has failed all configured processing attempts.
 2. `DeadLetterPublishingRecoverer` asks `KafkaDeadLetterTopicResolver` for the
@@ -241,7 +255,7 @@ on the same partition.
 4. Spring Kafka treats the original record as recovered.
 5. The consumer can continue with later records from the partition.
 
-## 13. Scenario: dead-letter publication fails
+## 14. Scenario: dead-letter publication fails
 
 1. The listener has failed all configured processing attempts.
 2. Spring Kafka tries to publish the record to the dead-letter topic.
@@ -253,7 +267,7 @@ on the same partition.
 This scenario should be monitored carefully. A failing DLT path means the system
 cannot safely isolate poison messages.
 
-## 14. Scenario: dead-letter topic is not configured
+## 15. Scenario: dead-letter topic is not configured
 
 1. The listener has failed all configured processing attempts, or a fatal
    exception such as deserialization failure needs immediate recovery.
@@ -268,7 +282,7 @@ This is intentional. A missing DLT mapping means the service does not know where
 poison messages for that topic should live. Failing fast is safer than silently
 publishing to a guessed topic name.
 
-## 15. Current delivery guarantees
+## 16. Current delivery guarantees
 
 The current consumer setup should be treated as at-least-once processing.
 
