@@ -159,6 +159,7 @@ Topic configuration is strict.
 `AppKafkaProperties` fails if:
 
 - a requested logical topic key is missing
+- a logical topic key is null, blank, or duplicated after trimming
 - a physical topic name is blank
 - a DLT topic name is missing or blank
 - a DLT topic name is equal to the main topic name

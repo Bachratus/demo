@@ -2,6 +2,7 @@ package com.bachratus.demo.infra.kafka.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -26,13 +27,14 @@ public record AppKafkaProperties(
         producer = producer == null ? Producer.defaults() : producer;
         listener = listener == null ? Listener.defaults() : listener;
         outbox = outbox == null ? Outbox.defaults() : outbox;
-        topics = topics == null ? Map.of() : Map.copyOf(new LinkedHashMap<>(topics));
+        topics = topics == null ? Map.of() : copyTopics(topics);
     }
 
     public Topic topic(String key) {
-        Topic topic = topics.get(key);
+        String normalizedKey = requireText(key, "Kafka topic key");
+        Topic topic = topics.get(normalizedKey);
         if (topic == null) {
-            throw new IllegalArgumentException("Missing Kafka topic configuration for key: " + key);
+            throw new IllegalArgumentException("Missing Kafka topic configuration for key: " + normalizedKey);
         }
         return topic;
     }
@@ -180,5 +182,20 @@ public record AppKafkaProperties(
             return value.trim();
         }
         throw new IllegalArgumentException(fieldName + " cannot be blank");
+    }
+
+    private static Map<String, Topic> copyTopics(Map<String, Topic> topics) {
+        LinkedHashMap<String, Topic> copy = new LinkedHashMap<>();
+
+        topics.forEach((key, topic) -> {
+            String normalizedKey = requireText(key, "Kafka topic key");
+            Objects.requireNonNull(topic, "Kafka topic configuration for key " + normalizedKey + " cannot be null");
+            Topic previous = copy.put(normalizedKey, topic);
+            if (previous != null) {
+                throw new IllegalArgumentException("Duplicate Kafka topic configuration key: " + normalizedKey);
+            }
+        });
+
+        return Collections.unmodifiableMap(copy);
     }
 }
