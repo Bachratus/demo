@@ -51,6 +51,11 @@ these properties and auto-configures the `ProducerFactory` and
 `AppKafkaProperties` and used by our code for validation, topic metadata,
 outbox polling, retry decisions, and send-result wait budgets.
 
+When `app.kafka.enabled=false`, `InfrastructureAutoConfigurationImportFilter`
+excludes Spring Boot's `KafkaAutoConfiguration`. In that mode the application
+should not have Boot-created Kafka infrastructure such as `KafkaAdmin`,
+`KafkaTemplate`, `ProducerFactory`, or `ConsumerFactory`.
+
 We do not declare a custom `ProducerFactory` or `KafkaTemplate` bean here. The
 application uses Spring Boot's Kafka auto-configuration and injects the resulting
 template:

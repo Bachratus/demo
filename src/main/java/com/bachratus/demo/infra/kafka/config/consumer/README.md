@@ -31,6 +31,10 @@ app.kafka.enabled: true
 
 When `app.kafka.enabled=false`, these beans are not registered:
 
+- Spring Boot Kafka auto-configuration (`KafkaAutoConfiguration`)
+- Boot-created Kafka infrastructure such as `KafkaAdmin`, `KafkaTemplate`,
+  `ProducerFactory`, `ConsumerFactory`, listener container factory, and listener
+  endpoint registry
 - Kafka listener infrastructure from this module
 - listener error handling configuration
 - dead-letter topic resolver
