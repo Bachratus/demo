@@ -1,4 +1,4 @@
-package com.bachratus.demo.infra.jobs;
+package com.bachratus.demo.infra.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
